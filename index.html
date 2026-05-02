@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Noticed — a quiet place for small moments</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="root">
+
+    <header class="top-section">
+      <div class="site-name">Noticed</div>
+      <p class="prompt-text">Have you caught a moment today?</p>
+      <p class="sub-prompt">Something small. Something yours.</p>
+
+      <div class="input-card">
+        <textarea id="momentInput" class="moment-input" rows="3" placeholder="I noticed…"></textarea>
+
+        <div id="imagePreviewWrap" style="display:none; margin: 12px 0 0;">
+          <img id="imagePreview" style="max-height:160px; border-radius:10px; object-fit:cover; max-width:100%;" />
+          <button onclick="clearImage()" class="clear-img-btn">✕ remove</button>
+        </div>
+
+        <div class="input-footer">
+          <label class="upload-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="3" width="18" height="18" rx="3"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <path d="m21 15-5-5L5 21"/>
+            </svg>
+            add an image
+            <input type="file" id="imageInput" accept="image/*" onchange="previewImage(event)" style="display:none">
+          </label>
+          <button class="add-btn" onclick="submitMoment()">add it</button>
+        </div>
+
+        <div id="submitStatus" class="submit-status" style="display:none;"></div>
+      </div>
+    </header>
+
+    <div class="divider"></div>
+
+    <main class="mosaic" id="mosaic">
+      <div class="loading-state">loading moments…</div>
+    </main>
+
+    <footer class="quiet-footer">every moment matters · add yours above</footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
