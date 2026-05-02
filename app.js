@@ -1,5 +1,4 @@
 // ─── Config ──────────────────────────────────────────────
-// Replace these with your actual Supabase values after setup
 const SUPABASE_URL = 'https://wkvtkcuoohiawiewqoao.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrdnRrY3Vvb2hpYXdpZXdxb2FvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NTI1MDMsImV4cCI6MjA5MzMyODUwM30.aGqkmaiVe-oH6lyxdtC9joLI-ciPjVF0nJHTYa7XSS8';
 const BUCKET_NAME = 'moment-images';
@@ -59,11 +58,10 @@ async function submitMoment() {
       imageUrl = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET_NAME}/${filename}`;
     }
 
-    // Save moment to database
+    // Save moment to database (no approved field — defaults to false in DB)
     const momentData = {
       text: text,
-      image_url: imageUrl,
-      approved: false  // goes into moderation queue
+      image_url: imageUrl
     };
 
     const dbRes = await fetch(`${SUPABASE_URL}/rest/v1/moments`, {
@@ -72,12 +70,16 @@ async function submitMoment() {
         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
         'apikey': SUPABASE_ANON_KEY,
         'Content-Type': 'application/json',
-        'Prefer': 'return=representation'
+        'Prefer': 'return=minimal'
       },
       body: JSON.stringify(momentData)
     });
 
-    if (!dbRes.ok) throw new Error('Failed to save moment');
+    if (!dbRes.ok) {
+      const errText = await dbRes.text();
+      console.error('DB error:', errText);
+      throw new Error('Failed to save moment');
+    }
 
     // Success
     input.value = '';
@@ -127,7 +129,6 @@ async function loadMoments() {
 
   } catch (err) {
     console.error(err);
-    // Show seed moments as fallback so the page never feels empty
     mosaic.innerHTML = '';
     getSeedMoments().forEach((m, i) => {
       mosaic.appendChild(buildCard(m, i));
@@ -193,7 +194,7 @@ function formatMeta(createdAt, location) {
   return parts.join(' · ');
 }
 
-// Seed moments shown when Supabase isn't connected yet
+// Seed moments shown as fallback
 function getSeedMoments() {
   return [
     { text: 'the way the coffee steam bent sideways when the window opened just slightly', created_at: new Date(Date.now() - 3600000).toISOString() },
