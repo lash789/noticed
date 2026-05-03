@@ -124,11 +124,11 @@ async function loadMoments() {
 
 function buildBubble(moment, index) {
   const palette   = PALETTES[index % PALETTES.length];
-  const shape     = SHAPES[Math.floor(rng(index * 3 + 7) * SHAPES.length)];
-  const bob       = BOBS[Math.floor(rng(index * 5 + 11) * BOBS.length)];
-  const sizeClass = SIZES[Math.floor(rng(index * 6 + 2) * SIZES.length)];
-  const dur       = (3.5 + rng(index * 2 + 1) * 4).toFixed(1) + 's';
-  const delay     = (rng(index * 4 + 2) * 2).toFixed(1) + 's';
+  const shape     = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+  const bob       = BOBS[Math.floor(Math.random() * BOBS.length)];
+  const sizeClass = SIZES[Math.floor(Math.random() * SIZES.length)];
+  const dur       = (3.5 + Math.random() * 4).toFixed(1) + 's';
+  const delay     = (Math.random() * 2).toFixed(1) + 's';
 
   const hasText  = !!(moment.text && moment.text.trim());
   const hasImage = !!moment.image_url;
