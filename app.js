@@ -121,7 +121,6 @@ async function loadMoments() {
     getSeedMoments().forEach((m, i) => container.appendChild(buildBubble(m, i)));
   }
   initScrollReveal();
-  initParallax();
   initHeaderParallax();
 }
 
@@ -213,36 +212,19 @@ function initHeaderParallax() {
   }, { passive: true });
 }
 
-function initParallax() {
-  const bubbles = document.querySelectorAll('.bubble');
-  let ticking = false;
-
-  window.addEventListener('scroll', () => {
-    if (!ticking) {
-      requestAnimationFrame(() => {
-        const scrollY = window.scrollY;
-        bubbles.forEach(b => {
-          const rate = parseFloat(getComputedStyle(b).getPropertyValue('--parallax') || '0');
-          if (b.classList.contains('visible')) {
-            b.style.transform = `translateY(${-scrollY * rate}px)`;
-          }
-        });
-        ticking = false;
-      });
-      ticking = true;
-    }
-  }, { passive: true });
-}
-
 function initScrollReveal() {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
+        entry.target.classList.remove('faded');
+      } else {
+        if (entry.target.classList.contains('visible')) {
+          entry.target.classList.add('faded');
+        }
       }
     });
-  }, { threshold: 0.05 });
+  }, { threshold: 0.08, rootMargin: '-5% 0px -5% 0px' });
   document.querySelectorAll('.bubble').forEach(b => observer.observe(b));
 }
 
@@ -277,4 +259,3 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   loadMoments();
 });
-
