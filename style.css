@@ -127,6 +127,17 @@ body {
   color: rgba(180,120,60,0.35); font-size: 16px; letter-spacing: 10px;
 }
 
+.meadow-heading {
+  text-align: center;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 28px;
+  font-weight: 900;
+  font-style: italic;
+  color: #4a2e10;
+  margin: 0 auto 24px;
+  opacity: 0.75;
+}
+
 /* ── MOSAIC GRID — Desktop ── */
 .bubbles-container {
   max-width: 1000px;
@@ -183,6 +194,11 @@ body {
 .bubble.visible {
   opacity: 1;
   transform: translateY(0) scale(1);
+}
+
+.bubble.faded {
+  opacity: 0;
+  transform: translateY(-16px) scale(0.96);
 }
 
 @keyframes bobA { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-7px); } }
@@ -320,21 +336,9 @@ body {
   .sub-prompt { margin-bottom: 20px; }
   .prompt-text { font-size: 26px; }
   .add-btn { font-size: 16px; padding: 9px 20px; }
-}
-.meadow-heading {
-  text-align: center;
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: 28px;
-  font-weight: 900;
-  font-style: italic;
-  color: #4a2e10;
-  margin: 0 auto 24px;
-  opacity: 0.75;
-}
-
-@media (max-width: 600px) {
   .meadow-heading { font-size: 22px; }
 }
+
 /* ── Parallax ── */
 .root {
   overflow-x: hidden;
