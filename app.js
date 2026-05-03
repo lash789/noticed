@@ -113,7 +113,9 @@ async function loadMoments() {
       container.innerHTML = '<div class="loading-state">be the first to share a moment</div>';
       return;
     }
-    moments.forEach((m, i) => container.appendChild(buildBubble(m, i)));
+        const shuffled = [...moments].sort(() => Math.random() - 0.5);
+    shuffled.forEach((m, i) => container.appendChild(buildBubble(m, i)));
+
   } catch(err) {
     console.error(err);
     container.innerHTML = '';
