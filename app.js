@@ -113,15 +113,15 @@ async function loadMoments() {
       container.innerHTML = '<div class="loading-state">be the first to share a moment</div>';
       return;
     }
-        const shuffled = [...moments].sort(() => Math.random() - 0.5);
+    const shuffled = [...moments].sort(() => Math.random() - 0.5);
     shuffled.forEach((m, i) => container.appendChild(buildBubble(m, i)));
-
   } catch(err) {
     console.error(err);
     container.innerHTML = '';
     getSeedMoments().forEach((m, i) => container.appendChild(buildBubble(m, i)));
   }
   initScrollReveal();
+  initParallax();
 }
 
 function buildBubble(moment, index) {
@@ -131,19 +131,21 @@ function buildBubble(moment, index) {
   const sizeClass = SIZES[Math.floor(Math.random() * SIZES.length)];
   const dur       = (3.5 + Math.random() * 4).toFixed(1) + 's';
   const delay     = (Math.random() * 2).toFixed(1) + 's';
+  const depths    = ['depth-near','depth-mid','depth-far'];
+  const depth     = depths[Math.floor(Math.random() * depths.length)];
+
+  const wrap = document.createElement('div');
+  wrap.className = `bubble ${bob} ${sizeClass} ${depth}`;
+  wrap.style.cssText = `--dur:${dur}; --delay:${delay};`;
+
+  const inner = document.createElement('div');
+  inner.className = `bubble-inner ${shape}`;
 
   const hasText  = !!(moment.text && moment.text.trim());
   const hasImage = !!moment.image_url;
   const type     = hasImage && hasText ? 'combined' : hasImage ? 'image-only' : 'text-only';
   const textLen  = moment.text ? moment.text.length : 0;
   const fontSize = textLen > 120 ? 11 : textLen > 60 ? 13 : 15;
-
-  const wrap = document.createElement('div');
-  wrap.className = `bubble ${bob} ${sizeClass}`;
-  wrap.style.cssText = `--dur:${dur}; --delay:${delay};`;
-
-  const inner = document.createElement('div');
-  inner.className = `bubble-inner ${shape}`;
 
   if (type === 'text-only') {
     inner.classList.add('tinted');
@@ -190,6 +192,27 @@ function buildBubble(moment, index) {
   }
 
   return wrap;
+}
+
+function initParallax() {
+  const bubbles = document.querySelectorAll('.bubble');
+  let ticking = false;
+
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        const scrollY = window.scrollY;
+        bubbles.forEach(b => {
+          const rate = parseFloat(getComputedStyle(b).getPropertyValue('--parallax') || '0');
+          if (b.classList.contains('visible')) {
+            b.style.transform = `translateY(${-scrollY * rate}px)`;
+          }
+        });
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
 }
 
 function initScrollReveal() {
