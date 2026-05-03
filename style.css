@@ -152,10 +152,9 @@ body {
 .bubble.sz-small  { grid-column: span 2; grid-row: span 2; }
 .bubble.sz-medium { grid-column: span 2; grid-row: span 3; }
 .bubble.sz-large  { grid-column: span 3; grid-row: span 3; }
-.bubble.sz-xlarge { grid-column: span 3; grid-row: span 
-  
+.bubble.sz-xlarge { grid-column: span 3; grid-row: span 4; }
 
-  /* ── MOBILE — 4-col grid, varied sizes, max 3 cols wide ── */
+/* ── MOBILE — 4-col grid, varied sizes, max 3 cols wide ── */
 @media (max-width: 600px) {
   .bubbles-container {
     grid-template-columns: repeat(4, 1fr);
@@ -169,7 +168,6 @@ body {
   .bubble.sz-large  { grid-column: span 3; grid-row: span 3; }
   .bubble.sz-xlarge { grid-column: span 2; grid-row: span 5; }
 }
-
 
 /* ── Bubble wrapper ── */
 .bubble {
