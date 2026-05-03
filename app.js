@@ -3,6 +3,20 @@ const SUPABASE_URL = 'https://wkvtkcuoohiawiewqoao.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrdnRrY3Vvb2hpYXdpZXdxb2FvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NTI1MDMsImV4cCI6MjA5MzMyODUwM30.aGqkmaiVe-oH6lyxdtC9joLI-ciPjVF0nJHTYa7XSS8';
 const BUCKET_NAME = 'moment-images';
 
+// ─── Bubble color palettes ────────────────────────────────
+const PALETTES = [
+  { bg: 'rgba(255,240,210,0.72)', border: 'rgba(210,160,80,0.45)',  color: '#5a3010' },
+  { bg: 'rgba(230,220,255,0.65)', border: 'rgba(160,140,210,0.40)', color: '#3a2860' },
+  { bg: 'rgba(210,240,230,0.68)', border: 'rgba(80,170,140,0.40)',  color: '#1a4a38' },
+  { bg: 'rgba(255,235,215,0.70)', border: 'rgba(210,140,80,0.40)',  color: '#5a2808' },
+  { bg: 'rgba(220,235,255,0.65)', border: 'rgba(100,150,220,0.40)', color: '#1a3060' },
+  { bg: 'rgba(240,230,255,0.68)', border: 'rgba(150,120,220,0.40)', color: '#3a1860' },
+  { bg: 'rgba(255,245,210,0.72)', border: 'rgba(220,180,60,0.45)',  color: '#5a3800' },
+  { bg: 'rgba(215,240,250,0.68)', border: 'rgba(80,170,210,0.40)',  color: '#103848' },
+  { bg: 'rgba(225,245,215,0.68)', border: 'rgba(100,180,90,0.40)',  color: '#1a4010' },
+  { bg: 'rgba(255,225,230,0.68)', border: 'rgba(210,120,140,0.40)', color: '#5a1830' },
+];
+
 // ─── State ───────────────────────────────────────────────
 let selectedFile = null;
 
@@ -34,14 +48,13 @@ async function submitMoment() {
   const btn = document.querySelector('.add-btn');
   const status = document.getElementById('submitStatus');
   btn.disabled = true;
-  btn.textContent = 'adding…';
   status.style.display = 'block';
+  status.style.color = '#8a6a4a';
   status.textContent = 'saving your moment…';
 
   try {
     let imageUrl = null;
 
-    // Upload image if one was selected
     if (selectedFile) {
       const filename = `${Date.now()}-${selectedFile.name.replace(/\s/g, '_')}`;
       const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET_NAME}/${filename}`, {
@@ -53,16 +66,9 @@ async function submitMoment() {
         },
         body: selectedFile
       });
-
       if (!uploadRes.ok) throw new Error('Image upload failed');
       imageUrl = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET_NAME}/${filename}`;
     }
-
-    // Save moment to database (no approved field — defaults to false in DB)
-    const momentData = {
-      text: text,
-      image_url: imageUrl
-    };
 
     const dbRes = await fetch(`${SUPABASE_URL}/rest/v1/moments`, {
       method: 'POST',
@@ -72,34 +78,32 @@ async function submitMoment() {
         'Content-Type': 'application/json',
         'Prefer': 'return=minimal'
       },
-      body: JSON.stringify(momentData)
+      body: JSON.stringify({ text, image_url: imageUrl })
     });
 
     if (!dbRes.ok) {
-      const errText = await dbRes.text();
-      console.error('DB error:', errText);
-      throw new Error('Failed to save moment');
+      const err = await dbRes.text();
+      console.error('DB error:', err);
+      throw new Error('Failed to save');
     }
 
-    // Success
     input.value = '';
     clearImage();
     status.textContent = '✓ your moment was added — it\'ll appear once we\'ve read it';
-    setTimeout(() => { status.style.display = 'none'; }, 4000);
+    setTimeout(() => { status.style.display = 'none'; }, 4500);
 
   } catch (err) {
     console.error(err);
     status.textContent = 'something went wrong — please try again';
-    status.style.color = '#c07060';
+    status.style.color = '#b06040';
   } finally {
     btn.disabled = false;
-    btn.textContent = 'add it';
   }
 }
 
-// ─── Load approved moments ────────────────────────────────
+// ─── Load moments ─────────────────────────────────────────
 async function loadMoments() {
-  const mosaic = document.getElementById('mosaic');
+  const container = document.getElementById('bubblesContainer');
 
   try {
     const res = await fetch(
@@ -112,104 +116,99 @@ async function loadMoments() {
       }
     );
 
-    if (!res.ok) throw new Error('Could not load moments');
+    if (!res.ok) throw new Error('Could not load');
     const moments = await res.json();
 
-    mosaic.innerHTML = '';
+    container.innerHTML = '';
 
     if (moments.length === 0) {
-      mosaic.innerHTML = '<div class="loading-state">be the first to add a moment</div>';
+      container.innerHTML = '<div class="loading-state">be the first to share a moment</div>';
       return;
     }
 
-    moments.forEach((m, i) => {
-      const card = buildCard(m, i);
-      mosaic.appendChild(card);
-    });
+    moments.forEach((m, i) => container.appendChild(buildBubble(m, i)));
 
   } catch (err) {
     console.error(err);
-    mosaic.innerHTML = '';
-    getSeedMoments().forEach((m, i) => {
-      mosaic.appendChild(buildCard(m, i));
-    });
+    container.innerHTML = '';
+    getSeedMoments().forEach((m, i) => container.appendChild(buildBubble(m, i)));
   }
 }
 
-// ─── Build a card element ─────────────────────────────────
-function buildCard(moment, index) {
-  const card = document.createElement('div');
-  const styles = ['warm', 'cool', 'cream'];
-  const style = styles[index % styles.length];
-  card.className = `moment-card ${style}`;
-  card.style.animationDelay = `${index * 0.05}s`;
+// ─── Build bubble ─────────────────────────────────────────
+function buildBubble(moment, index) {
+  const palette = PALETTES[index % PALETTES.length];
+  const textLen = moment.text ? moment.text.length : 0;
+  const size = moment.image_url
+    ? 180 + Math.floor(seededRandom(index) * 60)
+    : 120 + Math.floor(seededRandom(index) * 100);
+  const fontSize = textLen < 40 ? 15 : textLen > 160 ? 12 : 13;
 
-  const hasImage = moment.image_url;
-  const textLen = moment.text.length;
-  const textSize = textLen < 60 ? 'large' : textLen > 180 ? 'small' : '';
+  const wrap = document.createElement('div');
+  wrap.className = 'bubble';
+  wrap.style.animationDelay = `${index * 0.06}s`;
+  wrap.style.marginBottom = '32px';
 
-  if (hasImage) card.classList.add('image-card');
+  const inner = document.createElement('div');
+  inner.className = 'bubble-inner';
+  inner.style.cssText = `width:${size}px; height:${size}px; background:${palette.bg}; border:1px solid ${palette.border};`;
 
-  let html = '';
-
-  if (hasImage) {
-    const imgHeight = 120 + Math.floor(Math.random() * 100);
-    html += `<img class="moment-img" src="${escapeHtml(moment.image_url)}" alt="moment image" style="height:${imgHeight}px" loading="lazy">`;
+  if (moment.image_url) {
+    const img = document.createElement('img');
+    img.className = 'bubble-img';
+    img.src = moment.image_url;
+    img.alt = 'moment';
+    img.loading = 'lazy';
+    inner.appendChild(img);
   }
 
-  html += `<div class="moment-body">`;
-  html += `<p class="moment-text ${textSize}">${escapeHtml(moment.text)}</p>`;
+  const txt = document.createElement('p');
+  txt.className = 'bubble-text';
+  txt.style.cssText = `color:${palette.color}; font-size:${fontSize}px; max-width:${Math.floor(size * 0.68)}px;`;
+  txt.textContent = moment.text || '';
+  inner.appendChild(txt);
+  wrap.appendChild(inner);
 
-  const meta = formatMeta(moment.created_at, moment.location);
-  html += `<div class="moment-meta">${meta}</div>`;
-  html += `</div>`;
+  const meta = document.createElement('div');
+  meta.className = 'bubble-meta';
+  meta.textContent = formatTime(moment.created_at);
+  wrap.appendChild(meta);
 
-  card.innerHTML = html;
-  return card;
+  return wrap;
 }
 
 // ─── Helpers ──────────────────────────────────────────────
-function escapeHtml(str) {
-  if (!str) return '';
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+function seededRandom(seed) {
+  const x = Math.sin(seed + 1) * 10000;
+  return x - Math.floor(x);
 }
 
-function formatMeta(createdAt, location) {
-  const parts = [];
-  if (createdAt) {
-    const date = new Date(createdAt);
-    const now = new Date();
-    const diff = Math.floor((now - date) / 1000);
-    if (diff < 60) parts.push('just now');
-    else if (diff < 3600) parts.push(`${Math.floor(diff / 60)}m ago`);
-    else if (diff < 86400) parts.push(`${Math.floor(diff / 3600)}h ago`);
-    else if (diff < 604800) parts.push(`${Math.floor(diff / 86400)} days ago`);
-    else parts.push(date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }));
-  }
-  if (location) parts.push(location);
-  return parts.join(' · ');
+function formatTime(createdAt) {
+  if (!createdAt) return '';
+  const diff = Math.floor((Date.now() - new Date(createdAt)) / 1000);
+  if (diff < 60)     return 'just now';
+  if (diff < 3600)   return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400)  return `${Math.floor(diff / 3600)}h ago`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)} days ago`;
+  return new Date(createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 }
 
-// Seed moments shown as fallback
 function getSeedMoments() {
   return [
-    { text: 'the way the coffee steam bent sideways when the window opened just slightly', created_at: new Date(Date.now() - 3600000).toISOString() },
+    { text: 'the way coffee steam bent sideways when the window opened just slightly', created_at: new Date(Date.now() - 3600000).toISOString() },
     { text: 'I noticed the light was already different. Still summer but somehow the angle had shifted.', created_at: new Date(Date.now() - 86400000).toISOString() },
-    { text: '"she said thank you so quietly I almost missed it" — the cashier at the corner shop', created_at: new Date(Date.now() - 172800000).toISOString() },
+    { text: 'a stranger held the door open so long I had to slightly jog', created_at: new Date(Date.now() - 172800000).toISOString() },
     { text: 'my dog stopped and sniffed the same patch of sidewalk for nearly two full minutes. I let her.', created_at: new Date(Date.now() - 259200000).toISOString() },
-    { text: 'a stranger held the door open so long I had to slightly jog', created_at: new Date(Date.now() - 345600000).toISOString() },
-    { text: 'the kid on the bus who kept touching the window, leaving tiny handprints in the fog', created_at: new Date(Date.now() - 432000000).toISOString() },
-    { text: 'my grandmother laughed at something I said and I realized I\'d never noticed she covers her mouth when she does', created_at: new Date(Date.now() - 518400000).toISOString() },
-    { text: 'I noticed I\'ve been holding my breath slightly every time I open my email. Still trying to stop.', created_at: new Date(Date.now() - 604800000).toISOString() },
-    { text: 'the smell of rain before it actually started. That maybe five-second window.', created_at: new Date(Date.now() - 691200000).toISOString() },
+    { text: 'floating', created_at: new Date(Date.now() - 300000).toISOString() },
+    { text: 'the smell of rain before it actually started. That maybe five-second window.', created_at: new Date(Date.now() - 345600000).toISOString() },
+    { text: 'she covered her mouth when she laughed. I\'d never noticed before.', created_at: new Date(Date.now() - 432000000).toISOString() },
+    { text: 'tiny handprints in the bus window fog', created_at: new Date(Date.now() - 518400000).toISOString() },
+    { text: 'two pigeons sharing a chip. one waited.', created_at: new Date(Date.now() - 604800000).toISOString() },
+    { text: 'I\'ve been holding my breath when I open my email. Still trying to stop.', created_at: new Date(Date.now() - 691200000).toISOString() },
   ];
 }
 
-// ─── Keyboard shortcut ────────────────────────────────────
+// ─── Init ─────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('momentInput').addEventListener('keydown', e => {
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
@@ -217,6 +216,5 @@ document.addEventListener('DOMContentLoaded', () => {
       submitMoment();
     }
   });
-
   loadMoments();
 });
