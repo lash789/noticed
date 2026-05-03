@@ -21,7 +21,10 @@ const SIZES  = [‘sz-small’,‘sz-small’,‘sz-medium’,‘sz-medium’,�
 
 let selectedFile = null;
 
-function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function rng(seed) {
+const x = Math.sin(seed + 1) * 10000;
+return x - Math.floor(x);
+}
 
 // ─── Image preview ───────────────────────────────────────
 function previewImage(e) {
@@ -103,52 +106,35 @@ s.textContent = msg;
 // ─── Load moments ─────────────────────────────────────────
 async function loadMoments() {
 const container = document.getElementById(‘bubblesContainer’);
-container.innerHTML = ‘<div class="loading-state">gathering moments…</div>’;
-
-let moments = [];
-
 try {
 const res = await fetch(
 `${SUPABASE_URL}/rest/v1/moments?approved=eq.true&order=created_at.desc&limit=60`,
 { headers: { ‘Authorization’: `Bearer ${SUPABASE_ANON_KEY}`, ‘apikey’: SUPABASE_ANON_KEY } }
 );
-if (res.ok) {
-const data = await res.json();
-if (Array.isArray(data) && data.length > 0) moments = data;
-}
-} catch(err) {
-console.error(‘Fetch error:’, err);
-}
-
-// Always fall back to seeds if nothing loaded
-if (moments.length === 0) moments = getSeedMoments();
-
-// Shuffle
-for (let i = moments.length - 1; i > 0; i–) {
-const j = Math.floor(Math.random() * (i + 1));
-[moments[i], moments[j]] = [moments[j], moments[i]];
-}
-
+if (!res.ok) throw new Error();
+const moments = await res.json();
 container.innerHTML = ‘’;
-moments.forEach((m, i) => {
-try {
-container.appendChild(buildBubble(m, i));
-} catch(e) {
-console.error(‘Bubble error:’, e, m);
+if (!moments.length) {
+container.innerHTML = ‘<div class="loading-state">be the first to share a moment</div>’;
+return;
 }
-});
-
+moments.forEach((m, i) => container.appendChild(buildBubble(m, i)));
+} catch(err) {
+console.error(err);
+container.innerHTML = ‘’;
+getSeedMoments().forEach((m, i) => container.appendChild(buildBubble(m, i)));
+}
 initScrollReveal();
 }
 
 // ─── Build bubble ─────────────────────────────────────────
 function buildBubble(moment, index) {
 const palette   = PALETTES[index % PALETTES.length];
-const shape     = rand(SHAPES);
-const bob       = rand(BOBS);
-const sizeClass = rand(SIZES);
-const dur       = (3.5 + Math.random() * 4).toFixed(1) + ‘s’;
-const delay     = (Math.random() * 2).toFixed(1) + ‘s’;
+const shape     = SHAPES[Math.floor(rng(index * 3 + 7) * SHAPES.length)];
+const bob       = BOBS[Math.floor(rng(index * 5 + 11) * BOBS.length)];
+const sizeClass = SIZES[Math.floor(rng(index * 6 + 2) * SIZES.length)];
+const dur       = (3.5 + rng(index * 2 + 1) * 4).toFixed(1) + ‘s’;
+const delay     = (rng(index * 4 + 2) * 2).toFixed(1) + ‘s’;
 
 const hasText  = !!(moment.text && moment.text.trim());
 const hasImage = !!moment.image_url;
