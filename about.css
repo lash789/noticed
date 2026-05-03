@@ -13,8 +13,8 @@
 }
 
 .about-hero h1 {
-  font-family: 'Pinyon Script', cursive;
-  font-size: 56px;
+  font-family: 'Playfair Display', Georgia, serif; font-weight: 900; font-style: italic;
+  font-size: 52px;
   color: #7a3a08;
   font-weight: 400;
   margin-bottom: 24px;
@@ -136,7 +136,7 @@
 
 .about-book-btn {
   display: inline-block;
-  font-family: 'Pinyon Script', cursive;
+  font-family: 'Playfair Display', Georgia, serif; font-weight: 900; font-style: italic;
   font-size: 30px;
   color: #7a3a08;
   text-decoration: none;
