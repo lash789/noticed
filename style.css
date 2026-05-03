@@ -339,10 +339,38 @@ body {
 }
 
 /* ── Parallax ── */
-.root {
-  overflow-x: hidden;
-}
+.root { overflow-x: hidden; }
 
 .bubble.depth-near { --parallax: 0.08; }
 .bubble.depth-mid  { --parallax: 0.04; }
 .bubble.depth-far  { --parallax: 0.02; }
+
+/* ── Optional name/city fields ── */
+.optional-fields {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.optional-input {
+  flex: 1;
+  border: none;
+  border-bottom: 1px solid rgba(210,160,80,0.25);
+  outline: none;
+  font-family: 'Lora', serif;
+  font-size: 13px;
+  font-style: italic;
+  color: #3a2010;
+  background: transparent;
+  padding: 4px 2px;
+  transition: border-color 0.2s;
+}
+
+.optional-input::placeholder {
+  color: #c8a87a;
+  font-style: italic;
+}
+
+.optional-input:focus {
+  border-bottom-color: rgba(210,160,80,0.6);
+}
