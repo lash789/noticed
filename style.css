@@ -270,3 +270,35 @@ body {
   .prompt-text { font-size: 26px; }
   .add-btn { font-size: 26px; padding: 8px 24px; }
 }
+
+/* â”€â”€ Shared site footer â”€â”€ */
+.site-footer {
+  text-align: center;
+  padding: 40px 24px 32px;
+  border-top: 1px solid rgba(210,160,80,0.15);
+  margin-top: 40px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+
+.site-footer a {
+  font-family: 'Lora', serif;
+  font-size: 12px;
+  font-style: italic;
+  color: #a08060;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.site-footer a:hover { color: #5a3010; }
+
+.site-footer-copy {
+  width: 100%;
+  font-family: 'Lora', serif;
+  font-size: 11px;
+  color: #c0a880;
+  font-style: italic;
+}
