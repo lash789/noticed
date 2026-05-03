@@ -1,18 +1,11 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 html { scroll-behavior: smooth; }
 
 body {
   font-family: 'EB Garamond', Georgia, serif;
   background: linear-gradient(180deg,
-    #b8c8e8 0%,
-    #d4b8d8 18%,
-    #e8c498 40%,
-    #f0d490 58%,
-    #f4e4c0 72%,
-    #f8f0e0 84%,
-    #fdf8f2 100%
-  );
+    #b8c8e8 0%, #d4b8d8 18%, #e8c498 40%,
+    #f0d490 58%, #f4e4c0 72%, #f8f0e0 84%, #fdf8f2 100%);
   background-attachment: fixed;
   min-height: 100vh;
   color: #3a2a1a;
@@ -96,11 +89,9 @@ body {
 }
 .upload-label:hover { color: #6a4a30; }
 
-/* â”€â”€ Glowing button â”€â”€ */
 @keyframes pulseGlow {
-  0%   { box-shadow: 0 0 12px rgba(220,160,60,0.4), 0 0 28px rgba(220,140,40,0.2); text-shadow: 0 0 10px rgba(220,160,60,0.5), 0 0 20px rgba(220,140,40,0.3); }
-  50%  { box-shadow: 0 0 20px rgba(220,160,60,0.65), 0 0 44px rgba(220,140,40,0.35); text-shadow: 0 0 16px rgba(220,160,60,0.7), 0 0 32px rgba(220,140,40,0.4); }
-  100% { box-shadow: 0 0 12px rgba(220,160,60,0.4), 0 0 28px rgba(220,140,40,0.2); text-shadow: 0 0 10px rgba(220,160,60,0.5), 0 0 20px rgba(220,140,40,0.3); }
+  0%,100% { box-shadow: 0 0 12px rgba(220,160,60,0.4), 0 0 28px rgba(220,140,40,0.2); text-shadow: 0 0 10px rgba(220,160,60,0.5); }
+  50%     { box-shadow: 0 0 20px rgba(220,160,60,0.65), 0 0 44px rgba(220,140,40,0.35); text-shadow: 0 0 16px rgba(220,160,60,0.7), 0 0 32px rgba(220,140,40,0.4); }
 }
 
 .add-btn {
@@ -114,7 +105,6 @@ body {
   font-weight: 700;
   font-style: italic;
   cursor: pointer;
-  letter-spacing: 0.02em;
   line-height: 1.2;
   animation: pulseGlow 2.8s ease-in-out infinite;
   transition: transform 0.2s, background 0.2s;
@@ -124,45 +114,39 @@ body {
 .add-btn:disabled { opacity: 0.5; cursor: not-allowed; animation: none; }
 
 .clear-img-btn {
-  display: block;
-  margin-top: 6px;
-  background: none;
-  border: none;
-  font-size: 11px;
-  color: #a08060;
-  font-family: 'Lora', serif;
-  cursor: pointer;
-  font-style: italic;
+  display: block; margin-top: 6px; background: none; border: none;
+  font-size: 11px; color: #a08060; font-family: 'Lora', serif;
+  cursor: pointer; font-style: italic;
 }
 
 .submit-status {
-  margin-top: 10px;
-  font-size: 13px;
-  font-family: 'Lora', serif;
-  color: #8a6a4a;
-  font-style: italic;
+  margin-top: 10px; font-size: 13px;
+  font-family: 'Lora', serif; color: #8a6a4a; font-style: italic;
 }
 
-/* â”€â”€ Divider â”€â”€ */
 .divider {
-  text-align: center;
-  margin: 0 auto 52px;
-  color: rgba(180,120,60,0.35);
-  font-size: 16px;
-  letter-spacing: 10px;
+  text-align: center; margin: 0 auto 52px;
+  color: rgba(180,120,60,0.35); font-size: 16px; letter-spacing: 10px;
 }
 
-/* â”€â”€ Mosaic â€” column layout â”€â”€ */
+/* â”€â”€ MOSAIC GRID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+   Uses CSS grid with named areas. Each bubble gets a size
+   class (small/medium/large/xlarge) which controls how many
+   grid cells it spans â€” creating the collage effect.
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .bubbles-container {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 20px 16px 60px;
-  columns: 4;
-  column-gap: 10px;
+  padding: 20px 12px 60px;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-auto-rows: 80px;
+  gap: 10px;
+  align-items: start;
 }
 
 .loading-state {
-  column-span: all;
+  grid-column: 1 / -1;
   text-align: center;
   color: #b8a080;
   font-family: 'Lora', serif;
@@ -171,15 +155,32 @@ body {
   padding: 40px 0;
 }
 
-/* â”€â”€ Individual bubble â”€â”€ */
+/* Size classes â€” span different numbers of columns and rows */
+.bubble.sz-small  { grid-column: span 2; grid-row: span 2; }
+.bubble.sz-medium { grid-column: span 2; grid-row: span 3; }
+.bubble.sz-large  { grid-column: span 3; grid-row: span 3; }
+.bubble.sz-xlarge { grid-column: span 3; grid-row: span 4; }
+
+/* Mobile â€” 4 column grid, tighter rows */
+@media (max-width: 600px) {
+  .bubbles-container {
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: 65px;
+    gap: 7px;
+    padding: 16px 8px 60px;
+  }
+  .bubble.sz-small  { grid-column: span 2; grid-row: span 2; }
+  .bubble.sz-medium { grid-column: span 2; grid-row: span 3; }
+  .bubble.sz-large  { grid-column: span 2; grid-row: span 3; }
+  .bubble.sz-xlarge { grid-column: span 4; grid-row: span 3; }
+}
+
+/* â”€â”€ Bubble wrapper â”€â”€ */
 .bubble {
-  display: inline-block;
-  width: 100%;
-  margin-bottom: 10px;
-  break-inside: avoid;
   opacity: 0;
-  transform: translateY(30px) scale(0.94);
+  transform: translateY(20px) scale(0.95);
   transition: opacity 0.6s ease, transform 0.6s ease;
+  position: relative;
 }
 
 .bubble.visible {
@@ -188,12 +189,12 @@ body {
 }
 
 /* Bob animations */
-@keyframes bobA { 0%,100%{ transform: translateY(0px); } 50%{ transform: translateY(-8px); } }
-@keyframes bobB { 0%,100%{ transform: translateY(0px) rotate(0deg); } 50%{ transform: translateY(-6px) rotate(-0.6deg); } }
-@keyframes bobC { 0%,100%{ transform: translate(0,0); } 33%{ transform: translate(5px,-4px); } 66%{ transform: translate(-3px,-7px); } }
-@keyframes bobD { 0%,100%{ transform: translateY(0px); } 50%{ transform: translateY(-10px) rotate(0.8deg); } }
-@keyframes bobE { 0%,100%{ transform: translate(0,0); } 50%{ transform: translate(-6px,-5px); } }
-@keyframes bobF { 0%,100%{ transform: translateY(0px); } 25%{ transform: translateY(-4px); } 75%{ transform: translateY(-8px); } }
+@keyframes bobA { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-8px); } }
+@keyframes bobB { 0%,100%{ transform: translateY(0) rotate(0deg); } 50%{ transform: translateY(-6px) rotate(-0.5deg); } }
+@keyframes bobC { 0%,100%{ transform: translate(0,0); } 50%{ transform: translate(5px,-5px); } }
+@keyframes bobD { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-10px) rotate(0.7deg); } }
+@keyframes bobE { 0%,100%{ transform: translate(0,0); } 50%{ transform: translate(-5px,-4px); } }
+@keyframes bobF { 0%,100%{ transform: translateY(0); } 33%{ transform: translateY(-4px); } 66%{ transform: translateY(-8px); } }
 
 .bubble.visible.bob-a { animation: bobA var(--dur,4s) ease-in-out infinite var(--delay,0s); }
 .bubble.visible.bob-b { animation: bobB var(--dur,5s) ease-in-out infinite var(--delay,0s); }
@@ -202,8 +203,10 @@ body {
 .bubble.visible.bob-e { animation: bobE var(--dur,5.5s) ease-in-out infinite var(--delay,0s); }
 .bubble.visible.bob-f { animation: bobF var(--dur,7s) ease-in-out infinite var(--delay,0s); }
 
-/* â”€â”€ Bubble inner shapes â”€â”€ */
+/* â”€â”€ Bubble inner â”€â”€ */
 .bubble-inner {
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -211,18 +214,18 @@ body {
   position: relative;
   overflow: hidden;
   transition: transform 0.3s ease;
-  margin: 0 auto;
+  padding: 12px;
 }
+.bubble-inner:hover { transform: scale(1.03); }
 
-.bubble-inner:hover { transform: scale(1.04); }
-
+/* Shape variants */
 .bubble-inner.shape-circle   { border-radius: 50%; }
-.bubble-inner.shape-squircle { border-radius: 38%; }
+.bubble-inner.shape-squircle { border-radius: 30%; }
 .bubble-inner.shape-blob1    { border-radius: 60% 40% 55% 45% / 50% 45% 55% 50%; }
 .bubble-inner.shape-blob2    { border-radius: 45% 55% 40% 60% / 55% 40% 60% 45%; }
 .bubble-inner.shape-blob3    { border-radius: 50% 50% 65% 35% / 40% 60% 40% 60%; }
-.bubble-inner.shape-pill     { border-radius: 999px; }
 
+/* Tinted text bubbles */
 .bubble-inner.tinted::after {
   content: '';
   position: absolute;
@@ -234,37 +237,53 @@ body {
   pointer-events: none;
 }
 
+/* Image bubbles */
+.bubble-inner.img-fill { padding: 0; }
+.bubble-inner.img-fill img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Veil for combined bubbles */
+.bubble-veil {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0.52) 20%, rgba(0,0,0,0.08) 100%);
+}
+
+/* Text inside bubbles */
 .bubble-text {
   font-family: 'EB Garamond', Georgia, serif;
   font-style: italic;
-  line-height: 1.55;
+  line-height: 1.45;
   position: relative;
   z-index: 1;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  /* Clamp long text â€” never overflows the bubble */
+  -webkit-line-clamp: 6;
+  max-width: 90%;
+}
+
+.overlay-text {
+  color: #f5ead8 !important;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.8);
 }
 
 .bubble-meta {
-  display: block;
+  position: absolute;
+  bottom: -18px;
+  left: 0; right: 0;
   text-align: center;
-  margin-top: 6px;
-  font-size: 10px;
+  font-size: 9px;
   color: #a08060;
   font-family: 'Lora', serif;
   font-style: italic;
-}
-
-/* â”€â”€ Responsive columns â”€â”€ */
-@media (max-width: 900px) {
-  .bubbles-container { columns: 3; }
-}
-
-@media (max-width: 600px) {
-  .bubbles-container { columns: 2; column-gap: 8px; }
-  .prompt-text { font-size: 26px; }
-  .add-btn { font-size: 16px; padding: 9px 20px; }
-}
-
-@media (max-width: 380px) {
-  .bubbles-container { columns: 2; column-gap: 6px; }
 }
 
 /* â”€â”€ Footer â”€â”€ */
@@ -275,12 +294,10 @@ body {
   font-family: 'Playfair Display', Georgia, serif;
   font-size: 18px;
   font-style: italic;
-  font-weight: 400;
   color: rgba(100,70,40,0.45);
   line-height: 1.7;
 }
 
-/* â”€â”€ Shared site footer â”€â”€ */
 .site-footer {
   text-align: center;
   padding: 40px 24px 32px;
@@ -292,7 +309,6 @@ body {
   justify-content: center;
   gap: 24px;
 }
-
 .site-footer a {
   font-family: 'Lora', serif;
   font-size: 12px;
@@ -302,11 +318,15 @@ body {
   transition: color 0.2s;
 }
 .site-footer a:hover { color: #5a3010; }
-
 .site-footer-copy {
   width: 100%;
   font-family: 'Lora', serif;
   font-size: 11px;
   color: #c0a880;
   font-style: italic;
+}
+
+@media (max-width: 600px) {
+  .prompt-text { font-size: 26px; }
+  .add-btn { font-size: 16px; padding: 9px 20px; }
 }
