@@ -321,3 +321,17 @@ body {
   .prompt-text { font-size: 26px; }
   .add-btn { font-size: 16px; padding: 9px 20px; }
 }
+.meadow-heading {
+  text-align: center;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 28px;
+  font-weight: 900;
+  font-style: italic;
+  color: #4a2e10;
+  margin: 0 auto 24px;
+  opacity: 0.75;
+}
+
+@media (max-width: 600px) {
+  .meadow-heading { font-size: 22px; }
+}
