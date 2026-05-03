@@ -213,20 +213,26 @@ function initHeaderParallax() {
 }
 
 function initScrollReveal() {
+  const bubbles = document.querySelectorAll('.bubble');
+
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        entry.target.classList.remove('faded');
+        const idx = Array.from(bubbles).indexOf(entry.target);
+        setTimeout(() => {
+          entry.target.classList.add('visible');
+          entry.target.classList.remove('faded');
+        }, (idx % 4) * 80);
       } else {
         if (entry.target.classList.contains('visible')) {
           entry.target.classList.add('faded');
+          entry.target.classList.remove('visible');
         }
       }
     });
-  }, { threshold: 0, rootMargin: '0px 0px -15% 0px' });
-  
-  document.querySelectorAll('.bubble').forEach(b => observer.observe(b));
+  }, { threshold: 0.05, rootMargin: '0px 0px -8% 0px' });
+
+  bubbles.forEach(b => observer.observe(b));
 }
 
 function formatTime(createdAt) {
