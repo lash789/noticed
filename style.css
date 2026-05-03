@@ -1,301 +1,248 @@
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+// ─── Config ──────────────────────────────────────────────
+const SUPABASE_URL = 'https://wkvtkcuoohiawiewqoao.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrdnRrY3Vvb2hpYXdpZXdxb2FvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NTI1MDMsImV4cCI6MjA5MzMyODUwM30.aGqkmaiVe-oH6lyxdtC9joLI-ciPjVF0nJHTYa7XSS8';
 
-html { scroll-behavior: smooth; }
+const PALETTES = [
+  { bg: 'rgba(255,240,210,0.75)', border: 'rgba(210,160,80,0.45)',  color: '#5a3010' },
+  { bg: 'rgba(230,220,255,0.68)', border: 'rgba(160,140,210,0.40)', color: '#3a2860' },
+  { bg: 'rgba(210,240,230,0.70)', border: 'rgba(80,170,140,0.40)',  color: '#1a4a38' },
+  { bg: 'rgba(255,235,215,0.72)', border: 'rgba(210,140,80,0.40)',  color: '#5a2808' },
+  { bg: 'rgba(220,235,255,0.68)', border: 'rgba(100,150,220,0.40)', color: '#1a3060' },
+  { bg: 'rgba(240,230,255,0.70)', border: 'rgba(150,120,220,0.40)', color: '#3a1860' },
+  { bg: 'rgba(255,248,215,0.75)', border: 'rgba(220,180,60,0.45)',  color: '#5a3800' },
+  { bg: 'rgba(215,240,250,0.70)', border: 'rgba(80,170,210,0.40)',  color: '#103848' },
+  { bg: 'rgba(228,248,218,0.70)', border: 'rgba(100,180,90,0.40)',  color: '#1a4010' },
+  { bg: 'rgba(255,228,232,0.70)', border: 'rgba(210,120,140,0.40)', color: '#5a1830' },
+];
 
-body {
-  font-family: 'EB Garamond', Georgia, serif;
-  background: linear-gradient(180deg,
-    #b8c8e8 0%,
-    #d4b8d8 18%,
-    #e8c498 40%,
-    #f0d490 58%,
-    #f4e4c0 72%,
-    #f8f0e0 84%,
-    #fdf8f2 100%
-  );
-  background-attachment: fixed;
-  min-height: 100vh;
-  color: #3a2a1a;
+const SHAPES = ['shape-circle','shape-squircle','shape-blob1','shape-blob2','shape-blob3','shape-pill'];
+const BOBS   = ['bob-a','bob-b','bob-c','bob-d','bob-e','bob-f'];
+
+let selectedFile = null;
+
+function rng(seed) {
+  const x = Math.sin(seed + 1) * 10000;
+  return x - Math.floor(x);
 }
 
-.root { padding-bottom: 100px; min-height: 100vh; }
-
-/* â”€â”€ Header â”€â”€ */
-.top-section {
-  text-align: center;
-  padding: 72px 24px 52px;
-  max-width: 540px;
-  margin: 0 auto;
+// ─── Image preview ───────────────────────────────────────
+function previewImage(e) {
+  selectedFile = e.target.files[0];
+  if (!selectedFile) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('imagePreview').src = ev.target.result;
+    document.getElementById('imagePreviewWrap').style.display = 'block';
+  };
+  reader.readAsDataURL(selectedFile);
 }
 
-.prompt-text {
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: 36px;
-  font-weight: 900;
-  font-style: italic;
-  color: #4a2e10;
-  line-height: 1.3;
-  margin-bottom: 10px;
-  text-shadow: 0 2px 20px rgba(255,220,160,0.4);
+function clearImage() {
+  selectedFile = null;
+  document.getElementById('imageInput').value = '';
+  document.getElementById('imagePreviewWrap').style.display = 'none';
+  document.getElementById('imagePreview').src = '';
 }
 
-.sub-prompt {
-  font-size: 15px;
-  color: #8a6a4a;
-  font-family: 'Lora', serif;
-  margin-bottom: 36px;
-  font-style: italic;
+// ─── Submit ───────────────────────────────────────────────
+async function submitMoment() {
+  const input = document.getElementById('momentInput');
+  const text = input.value.trim();
+  const hasText = text.length > 0;
+  const hasImage = !!selectedFile;
+
+  if (!hasText && !hasImage) {
+    const status = document.getElementById('submitStatus');
+    status.style.display = 'block';
+    status.style.color = '#b06040';
+    status.textContent = 'Please share something — words, an image, or both.';
+    return;
+  }
+
+  const btn = document.querySelector('.add-btn');
+  const status = document.getElementById('submitStatus');
+  btn.disabled = true;
+  status.style.display = 'block';
+  status.style.color = '#8a6a4a';
+  status.textContent = 'catching your moment…';
+
+  try {
+    const formData = new FormData();
+    if (hasText) formData.append('text', text);
+    if (hasImage) formData.append('image', selectedFile);
+
+    const res = await fetch('/api/moderate', { method: 'POST', body: formData });
+    const data = await res.json();
+
+    if (data.success) {
+      input.value = '';
+      clearImage();
+      status.style.color = '#8a6a4a';
+      status.textContent = '✓ ' + data.message;
+      setTimeout(() => { status.style.display = 'none'; loadMoments(); }, 3000);
+    } else {
+      status.style.color = '#b06040';
+      status.textContent = data.message;
+    }
+  } catch (err) {
+    console.error(err);
+    status.style.color = '#b06040';
+    status.textContent = 'something went wrong — please try again';
+  } finally {
+    btn.disabled = false;
+  }
 }
 
-/* â”€â”€ Input card â”€â”€ */
-.input-bubble {
-  background: rgba(255,248,235,0.58);
-  border: 1px solid rgba(210,160,80,0.28);
-  border-radius: 28px;
-  padding: 20px 24px 24px;
-  text-align: left;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  transition: border-color 0.25s;
-}
-.input-bubble:focus-within { border-color: rgba(210,160,80,0.55); }
-
-.moment-input {
-  width: 100%;
-  border: none;
-  outline: none;
-  font-family: 'EB Garamond', Georgia, serif;
-  font-size: 17px;
-  color: #3a2010;
-  background: transparent;
-  resize: none;
-  line-height: 1.7;
-  min-height: 70px;
-}
-.moment-input::placeholder { color: #c8a87a; font-style: italic; }
-
-.input-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 16px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(210,160,80,0.14);
+// ─── Load moments ─────────────────────────────────────────
+async function loadMoments() {
+  const container = document.getElementById('bubblesContainer');
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/moments?approved=eq.true&order=created_at.desc&limit=60`, {
+      headers: { 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY }
+    });
+    if (!res.ok) throw new Error();
+    const moments = await res.json();
+    container.innerHTML = '';
+    if (!moments.length) { container.innerHTML = '<div class="loading-state">be the first to share a moment</div>'; return; }
+    moments.forEach((m, i) => container.appendChild(buildBubble(m, i)));
+  } catch(err) {
+    container.innerHTML = '';
+    getSeedMoments().forEach((m, i) => container.appendChild(buildBubble(m, i)));
+  }
+  initScrollReveal();
 }
 
-.upload-label {
-  font-size: 12px;
-  color: #a08060;
-  font-family: 'Lora', serif;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-style: italic;
-  transition: color 0.2s;
-}
-.upload-label:hover { color: #6a4a30; }
+// ─── Build bubble ─────────────────────────────────────────
+// Images always stay with their text — no splitting.
+// Three types: text-only, image-only, combined (image+text together).
 
-/* â”€â”€ Glowing button â”€â”€ */
-@keyframes pulseGlow {
-  0%   { box-shadow: 0 0 12px rgba(220,160,60,0.4), 0 0 28px rgba(220,140,40,0.2); text-shadow: 0 0 10px rgba(220,160,60,0.5), 0 0 20px rgba(220,140,40,0.3); }
-  50%  { box-shadow: 0 0 20px rgba(220,160,60,0.65), 0 0 44px rgba(220,140,40,0.35); text-shadow: 0 0 16px rgba(220,160,60,0.7), 0 0 32px rgba(220,140,40,0.4); }
-  100% { box-shadow: 0 0 12px rgba(220,160,60,0.4), 0 0 28px rgba(220,140,40,0.2); text-shadow: 0 0 10px rgba(220,160,60,0.5), 0 0 20px rgba(220,140,40,0.3); }
-}
+function buildBubble(moment, index) {
+  const seed     = index;
+  const palette  = PALETTES[index % PALETTES.length];
+  const shape    = SHAPES[Math.floor(rng(seed * 3 + 7) * SHAPES.length)];
+  const bob      = BOBS[Math.floor(rng(seed * 5 + 11) * BOBS.length)];
+  const dur      = (3.5 + rng(seed * 2 + 1) * 4).toFixed(1) + 's';
+  const delay    = (rng(seed * 4 + 2) * 2).toFixed(1) + 's';
 
-.add-btn {
-  background: rgba(255,240,200,0.25);
-  color: #7a3a08;
-  border: 1px solid rgba(220,170,80,0.6);
-  border-radius: 32px;
-  padding: 10px 28px;
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: 18px;
-  font-weight: 700;
-  font-style: italic;
-  cursor: pointer;
-  letter-spacing: 0.02em;
-  line-height: 1.2;
-  animation: pulseGlow 2.8s ease-in-out infinite;
-  transition: transform 0.2s, background 0.2s;
-}
-.add-btn:hover { transform: scale(1.05); background: rgba(255,240,200,0.38); }
-.add-btn:active { transform: scale(0.97); }
-.add-btn:disabled { opacity: 0.5; cursor: not-allowed; animation: none; }
+  const hasText  = !!(moment.text && moment.text.trim());
+  const hasImage = !!moment.image_url;
+  const type     = hasImage && hasText ? 'combined' : hasImage ? 'image-only' : 'text-only';
 
-.clear-img-btn {
-  display: block;
-  margin-top: 6px;
-  background: none;
-  border: none;
-  font-size: 11px;
-  color: #a08060;
-  font-family: 'Lora', serif;
-  cursor: pointer;
-  font-style: italic;
-}
+  const textLen  = moment.text ? moment.text.length : 0;
+  const fontSize = textLen < 40 ? 15 : textLen > 160 ? 11 : 13;
 
-.submit-status {
-  margin-top: 10px;
-  font-size: 13px;
-  font-family: 'Lora', serif;
-  color: #8a6a4a;
-  font-style: italic;
-}
+  // Size — smaller on mobile via CSS, base size set here
+  let w, h;
+  if (type === 'text-only') {
+    const base = 110 + Math.floor(rng(seed) * 80); // 110–190
+    w = shape === 'shape-pill' ? Math.floor(base * 1.7) : base;
+    h = shape === 'shape-pill' ? Math.floor(base * 0.65) : base;
+  } else {
+    const base = 130 + Math.floor(rng(seed) * 70); // 130–200
+    w = shape === 'shape-pill' ? Math.floor(base * 1.6) : base;
+    h = shape === 'shape-pill' ? Math.floor(base * 0.7) : base;
+  }
 
-/* â”€â”€ Divider â”€â”€ */
-.divider {
-  text-align: center;
-  margin: 0 auto 52px;
-  color: rgba(180,120,60,0.35);
-  font-size: 16px;
-  letter-spacing: 10px;
-}
+  const wrap = document.createElement('div');
+  wrap.className = `bubble ${bob}`;
+  wrap.style.cssText = `--dur:${dur}; --delay:${delay};`;
 
-/* â”€â”€ Mosaic â”€â”€ */
-.bubbles-container {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 20px 24px 60px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: center;
-}
+  const inner = document.createElement('div');
+  inner.className = `bubble-inner ${shape}`;
+  inner.style.width  = `${w}px`;
+  inner.style.height = `${h}px`;
 
-.loading-state {
-  width: 100%;
-  text-align: center;
-  color: #b8a080;
-  font-family: 'Lora', serif;
-  font-size: 14px;
-  font-style: italic;
-  padding: 40px 0;
+  if (type === 'text-only') {
+    inner.classList.add('tinted');
+    inner.style.background = palette.bg;
+    inner.style.border = `1px solid ${palette.border}`;
+    const p = document.createElement('p');
+    p.className = 'bubble-text';
+    p.style.cssText = `color:${palette.color}; font-size:${fontSize}px; max-width:${Math.floor(w * 0.72)}px;`;
+    p.textContent = moment.text;
+    inner.appendChild(p);
+
+  } else if (type === 'image-only') {
+    inner.style.cssText += '; background:#c0b0a0; border:1px solid rgba(255,255,255,0.28); overflow:hidden;';
+    const img = document.createElement('img');
+    img.style.cssText = 'width:100%; height:100%; object-fit:cover; display:block;';
+    img.src = moment.image_url;
+    img.alt = 'moment';
+    img.loading = 'lazy';
+    inner.appendChild(img);
+
+  } else {
+    // Combined — image fills bubble, text overlays with veil
+    inner.style.cssText += '; background:#c0b0a0; border:1px solid rgba(255,255,255,0.22); overflow:hidden; position:relative;';
+    const img = document.createElement('img');
+    img.style.cssText = 'position:absolute; inset:0; width:100%; height:100%; object-fit:cover;';
+    img.src = moment.image_url;
+    img.alt = 'moment';
+    img.loading = 'lazy';
+    inner.appendChild(img);
+    const veil = document.createElement('div');
+    veil.style.cssText = 'position:absolute; inset:0; background:radial-gradient(ellipse at center, rgba(0,0,0,0.52) 25%, rgba(0,0,0,0.08) 100%);';
+    inner.appendChild(veil);
+    const p = document.createElement('p');
+    p.className = 'bubble-text';
+    p.style.cssText = `position:relative; z-index:2; color:#f5ead8; font-size:${fontSize}px; max-width:${Math.floor(w*0.68)}px; text-shadow:0 1px 8px rgba(0,0,0,0.8);`;
+    p.textContent = moment.text;
+    inner.appendChild(p);
+  }
+
+  wrap.appendChild(inner);
+
+  const meta = document.createElement('div');
+  meta.className = 'bubble-meta';
+  meta.textContent = formatTime(moment.created_at);
+  wrap.appendChild(meta);
+
+  return wrap;
 }
 
-/* â”€â”€ Individual bubble â”€â”€ */
-.bubble {
-  position: relative;
-  margin: 12px;
-  cursor: default;
-  opacity: 0;
-  transform: translateY(40px) scale(0.92);
-  transition: opacity 0.7s ease, transform 0.7s ease;
+// ─── Scroll reveal ────────────────────────────────────────
+function initScrollReveal() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const el = entry.target;
+        setTimeout(() => el.classList.add('visible'), rng(Array.from(document.querySelectorAll('.bubble')).indexOf(el)) * 200);
+        observer.unobserve(el);
+      }
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -20px 0px' });
+  document.querySelectorAll('.bubble').forEach(b => observer.observe(b));
 }
 
-.bubble.visible {
-  opacity: 1;
-  transform: translateY(0) scale(1);
+// ─── Helpers ──────────────────────────────────────────────
+function formatTime(createdAt) {
+  if (!createdAt) return '';
+  const diff = Math.floor((Date.now() - new Date(createdAt)) / 1000);
+  if (diff < 60)     return 'just now';
+  if (diff < 3600)   return `${Math.floor(diff/60)}m ago`;
+  if (diff < 86400)  return `${Math.floor(diff/3600)}h ago`;
+  if (diff < 604800) return `${Math.floor(diff/86400)} days ago`;
+  return new Date(createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 }
 
-@keyframes bobA { 0%,100%{ transform: translateY(0px) rotate(0deg); } 50%{ transform: translateY(-10px) rotate(0.5deg); } }
-@keyframes bobB { 0%,100%{ transform: translateY(0px) rotate(0deg); } 50%{ transform: translateY(-7px) rotate(-0.8deg); } }
-@keyframes bobC { 0%,100%{ transform: translateX(0px) translateY(0px); } 33%{ transform: translateX(6px) translateY(-5px); } 66%{ transform: translateX(-4px) translateY(-8px); } }
-@keyframes bobD { 0%,100%{ transform: translateY(0px) rotate(0deg); } 50%{ transform: translateY(-12px) rotate(1deg); } }
-@keyframes bobE { 0%,100%{ transform: translateX(0px) translateY(0px); } 50%{ transform: translateX(-8px) translateY(-6px); } }
-@keyframes bobF { 0%,100%{ transform: translateY(0px) rotate(0deg); } 25%{ transform: translateY(-5px) rotate(-0.5deg); } 75%{ transform: translateY(-9px) rotate(0.5deg); } }
-
-.bubble.visible.bob-a { animation: bobA var(--dur, 4s) ease-in-out infinite var(--delay, 0s); }
-.bubble.visible.bob-b { animation: bobB var(--dur, 5s) ease-in-out infinite var(--delay, 0s); }
-.bubble.visible.bob-c { animation: bobC var(--dur, 6s) ease-in-out infinite var(--delay, 0s); }
-.bubble.visible.bob-d { animation: bobD var(--dur, 4.5s) ease-in-out infinite var(--delay, 0s); }
-.bubble.visible.bob-e { animation: bobE var(--dur, 5.5s) ease-in-out infinite var(--delay, 0s); }
-.bubble.visible.bob-f { animation: bobF var(--dur, 7s) ease-in-out infinite var(--delay, 0s); }
-
-.bubble-inner {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
-}
-.bubble-inner:hover { transform: scale(1.04); }
-
-.bubble-inner.shape-circle   { border-radius: 50%; }
-.bubble-inner.shape-squircle { border-radius: 38%; }
-.bubble-inner.shape-blob1    { border-radius: 60% 40% 55% 45% / 50% 45% 55% 50%; }
-.bubble-inner.shape-blob2    { border-radius: 45% 55% 40% 60% / 55% 40% 60% 45%; }
-.bubble-inner.shape-blob3    { border-radius: 50% 50% 65% 35% / 40% 60% 40% 60%; }
-.bubble-inner.shape-pill     { border-radius: 999px; }
-
-.bubble-inner.tinted::after {
-  content: '';
-  position: absolute;
-  top: 8%; left: 14%;
-  width: 30%; height: 18%;
-  background: rgba(255,255,255,0.22);
-  border-radius: 50%;
-  transform: rotate(-20deg);
-  pointer-events: none;
+function getSeedMoments() {
+  return [
+    { text: 'the way coffee steam bent sideways when the window opened', created_at: new Date(Date.now()-3600000).toISOString() },
+    { text: 'I noticed the light was already different. Still summer but somehow the angle had shifted.', created_at: new Date(Date.now()-86400000).toISOString() },
+    { text: 'a stranger held the door open so long I had to slightly jog', created_at: new Date(Date.now()-172800000).toISOString() },
+    { text: 'my dog stopped and sniffed the same patch of sidewalk for two full minutes. I let her.', created_at: new Date(Date.now()-259200000).toISOString() },
+    { text: 'floating', created_at: new Date(Date.now()-300000).toISOString() },
+    { text: 'the smell of rain before it started. That five-second window.', created_at: new Date(Date.now()-345600000).toISOString() },
+    { text: 'she covered her mouth when she laughed. I\'d never noticed before.', created_at: new Date(Date.now()-432000000).toISOString() },
+    { text: 'tiny handprints in the bus window fog', created_at: new Date(Date.now()-518400000).toISOString() },
+    { text: 'two pigeons sharing a chip. one waited.', created_at: new Date(Date.now()-604800000).toISOString() },
+    { text: 'holding my breath every time I open my email. Still trying to stop.', created_at: new Date(Date.now()-691200000).toISOString() },
+  ];
 }
 
-.bubble-text {
-  font-family: 'EB Garamond', Georgia, serif;
-  font-style: italic;
-  line-height: 1.55;
-  position: relative;
-  z-index: 1;
-}
-
-.bubble-meta {
-  position: absolute;
-  bottom: -22px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 10px;
-  color: #a08060;
-  font-family: 'Lora', serif;
-  white-space: nowrap;
-  font-style: italic;
-}
-
-/* â”€â”€ Footer â”€â”€ */
-.quiet-footer {
-  text-align: center;
-  margin-top: 64px;
-  padding: 0 24px;
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: 18px;
-  font-style: italic;
-  font-weight: 400;
-  color: rgba(100,70,40,0.45);
-  line-height: 1.7;
-}
-
-/* â”€â”€ Shared site footer â”€â”€ */
-.site-footer {
-  text-align: center;
-  padding: 40px 24px 32px;
-  border-top: 1px solid rgba(210,160,80,0.15);
-  margin-top: 40px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 24px;
-}
-
-.site-footer a {
-  font-family: 'Lora', serif;
-  font-size: 12px;
-  font-style: italic;
-  color: #a08060;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-.site-footer a:hover { color: #5a3010; }
-
-.site-footer-copy {
-  width: 100%;
-  font-family: 'Lora', serif;
-  font-size: 11px;
-  color: #c0a880;
-  font-style: italic;
-}
-
-@media (max-width: 600px) {
-  .prompt-text { font-size: 28px; }
-  .add-btn { font-size: 16px; padding: 9px 22px; }
-}
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('momentInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); submitMoment(); }
+  });
+  loadMoments();
+});
