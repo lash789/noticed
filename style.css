@@ -318,3 +318,13 @@ body {
   .prompt-text { font-size: 26px; }
   .add-btn { font-size: 16px; padding: 9px 20px; }
 }
+
+/* ── Mobile spacing fixes ── */
+@media (max-width: 600px) {
+  .top-section {
+    padding: 28px 20px 32px;
+  }
+  .sub-prompt {
+    margin-bottom: 20px;
+  }
+}
