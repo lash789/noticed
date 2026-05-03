@@ -13,7 +13,6 @@ body {
 
 .root { padding-bottom: 100px; min-height: 100vh; }
 
-/* ── Header ── */
 .top-section {
   text-align: center;
   padding: 72px 24px 52px;
@@ -128,7 +127,7 @@ body {
   color: rgba(180,120,60,0.35); font-size: 16px; letter-spacing: 10px;
 }
 
-/* ── MOSAIC GRID ── */
+/* ── MOSAIC GRID — Desktop ── */
 .bubbles-container {
   max-width: 1000px;
   margin: 0 auto;
@@ -136,7 +135,7 @@ body {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   grid-auto-rows: 80px;
-  gap: 10px;
+  gap: 8px;
 }
 
 .loading-state {
@@ -149,30 +148,33 @@ body {
   padding: 40px 0;
 }
 
-/* Size classes */
+/* Desktop size classes */
 .bubble.sz-small  { grid-column: span 2; grid-row: span 2; }
 .bubble.sz-medium { grid-column: span 2; grid-row: span 3; }
 .bubble.sz-large  { grid-column: span 3; grid-row: span 3; }
 .bubble.sz-xlarge { grid-column: span 3; grid-row: span 4; }
 
+/* ── MOBILE — tight 4-col grid, nothing wider than 2 cols ── */
 @media (max-width: 600px) {
   .bubbles-container {
     grid-template-columns: repeat(4, 1fr);
-    grid-auto-rows: 60px;
-    gap: 7px;
-    padding: 16px 8px 60px;
+    grid-auto-rows: 52px;
+    gap: 5px;
+    padding: 10px 6px 60px;
   }
+
+  /* Cap everything at 2 columns — true mosaic, no banners */
   .bubble.sz-small  { grid-column: span 2; grid-row: span 2; }
   .bubble.sz-medium { grid-column: span 2; grid-row: span 3; }
   .bubble.sz-large  { grid-column: span 2; grid-row: span 3; }
-  .bubble.sz-xlarge { grid-column: span 4; grid-row: span 3; }
+  .bubble.sz-xlarge { grid-column: span 2; grid-row: span 4; }
 }
 
 /* ── Bubble wrapper ── */
 .bubble {
   opacity: 0;
-  transform: translateY(20px) scale(0.95);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transform: translateY(16px) scale(0.96);
+  transition: opacity 0.55s ease, transform 0.55s ease;
   position: relative;
   width: 100%;
   height: 100%;
@@ -184,12 +186,12 @@ body {
   transform: translateY(0) scale(1);
 }
 
-@keyframes bobA { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-8px); } }
-@keyframes bobB { 0%,100%{ transform: translateY(0) rotate(0deg); } 50%{ transform: translateY(-6px) rotate(-0.5deg); } }
-@keyframes bobC { 0%,100%{ transform: translate(0,0); } 50%{ transform: translate(5px,-5px); } }
-@keyframes bobD { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-10px) rotate(0.7deg); } }
-@keyframes bobE { 0%,100%{ transform: translate(0,0); } 50%{ transform: translate(-5px,-4px); } }
-@keyframes bobF { 0%,100%{ transform: translateY(0); } 33%{ transform: translateY(-4px); } 66%{ transform: translateY(-8px); } }
+@keyframes bobA { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-7px); } }
+@keyframes bobB { 0%,100%{ transform: translateY(0) rotate(0deg); } 50%{ transform: translateY(-5px) rotate(-0.5deg); } }
+@keyframes bobC { 0%,100%{ transform: translate(0,0); } 50%{ transform: translate(4px,-5px); } }
+@keyframes bobD { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-9px) rotate(0.6deg); } }
+@keyframes bobE { 0%,100%{ transform: translate(0,0); } 50%{ transform: translate(-4px,-4px); } }
+@keyframes bobF { 0%,100%{ transform: translateY(0); } 33%{ transform: translateY(-3px); } 66%{ transform: translateY(-7px); } }
 
 .bubble.visible.bob-a { animation: bobA var(--dur,4s) ease-in-out infinite var(--delay,0s); }
 .bubble.visible.bob-b { animation: bobB var(--dur,5s) ease-in-out infinite var(--delay,0s); }
@@ -315,16 +317,8 @@ body {
 }
 
 @media (max-width: 600px) {
+  .top-section { padding: 28px 20px 32px; }
+  .sub-prompt { margin-bottom: 20px; }
   .prompt-text { font-size: 26px; }
   .add-btn { font-size: 16px; padding: 9px 20px; }
-}
-
-/* ── Mobile spacing fixes ── */
-@media (max-width: 600px) {
-  .top-section {
-    padding: 28px 20px 32px;
-  }
-  .sub-prompt {
-    margin-bottom: 20px;
-  }
 }
