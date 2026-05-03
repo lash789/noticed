@@ -19,6 +19,7 @@ const PALETTES = [
 
 // ─── State ───────────────────────────────────────────────
 let selectedFile = null;
+let momentIndex = 0;
 
 // ─── Image preview ───────────────────────────────────────
 function previewImage(e) {
@@ -136,39 +137,111 @@ async function loadMoments() {
 }
 
 // ─── Build bubble ─────────────────────────────────────────
+// Three types:
+//   image-only  — full bleed image fills the circle, no text overlay
+//   text-only   — no image, soft tinted bubble with italic text
+//   combined    — image fills bubble, text floats over a gentle dark veil
+
 function buildBubble(moment, index) {
   const palette = PALETTES[index % PALETTES.length];
+  const rng = seededRandom(index);
+  const hasImage = !!moment.image_url;
+  const hasText  = !!(moment.text && moment.text.trim());
+
+  // Decide variant
+  let variant;
+  if (hasImage && hasText) {
+    // 40% image-only, 40% combined, 20% text-only (image ignored)
+    const roll = seededRandom(index + 100);
+    variant = roll < 0.4 ? 'image-only' : roll < 0.8 ? 'combined' : 'text-only';
+  } else if (hasImage) {
+    variant = 'image-only';
+  } else {
+    variant = 'text-only';
+  }
+
+  // Size varies by variant
+  const size = variant === 'text-only'
+    ? 120 + Math.floor(rng * 90)
+    : 160 + Math.floor(rng * 80);
+
   const textLen = moment.text ? moment.text.length : 0;
-  const size = moment.image_url
-    ? 180 + Math.floor(seededRandom(index) * 60)
-    : 120 + Math.floor(seededRandom(index) * 100);
   const fontSize = textLen < 40 ? 15 : textLen > 160 ? 12 : 13;
 
+  // Wrapper
   const wrap = document.createElement('div');
   wrap.className = 'bubble';
   wrap.style.animationDelay = `${index * 0.06}s`;
   wrap.style.marginBottom = '32px';
 
+  // Inner circle
   const inner = document.createElement('div');
   inner.className = 'bubble-inner';
-  inner.style.cssText = `width:${size}px; height:${size}px; background:${palette.bg}; border:1px solid ${palette.border};`;
+  inner.style.width  = `${size}px`;
+  inner.style.height = `${size}px`;
 
-  if (moment.image_url) {
+  if (variant === 'text-only') {
+    // Plain tinted bubble
+    inner.style.background = palette.bg;
+    inner.style.border = `1px solid ${palette.border}`;
+
+    const txt = document.createElement('p');
+    txt.className = 'bubble-text';
+    txt.style.cssText = `color:${palette.color}; font-size:${fontSize}px; max-width:${Math.floor(size * 0.70)}px;`;
+    txt.textContent = moment.text;
+    inner.appendChild(txt);
+
+  } else if (variant === 'image-only') {
+    // Full-bleed image, no text, just the highlight sheen
+    inner.style.background = '#c8b8a8';
+    inner.style.border = `1px solid rgba(255,255,255,0.3)`;
+    inner.style.overflow = 'hidden';
+
     const img = document.createElement('img');
-    img.className = 'bubble-img';
+    img.style.cssText = 'width:100%; height:100%; object-fit:cover; display:block; border-radius:50%;';
     img.src = moment.image_url;
     img.alt = 'moment';
     img.loading = 'lazy';
     inner.appendChild(img);
+
+  } else {
+    // Combined: image + text over a soft dark veil
+    inner.style.background = '#c8b8a8';
+    inner.style.border = `1px solid rgba(255,255,255,0.25)`;
+    inner.style.overflow = 'hidden';
+    inner.style.position = 'relative';
+
+    const img = document.createElement('img');
+    img.style.cssText = 'position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:50%;';
+    img.src = moment.image_url;
+    img.alt = 'moment';
+    img.loading = 'lazy';
+    inner.appendChild(img);
+
+    // Dark veil so text is legible
+    const veil = document.createElement('div');
+    veil.style.cssText = `
+      position:absolute; inset:0; border-radius:50%;
+      background: radial-gradient(ellipse at center, rgba(0,0,0,0.45) 40%, rgba(0,0,0,0.15) 100%);
+    `;
+    inner.appendChild(veil);
+
+    const txt = document.createElement('p');
+    txt.className = 'bubble-text';
+    txt.style.cssText = `
+      position:relative; z-index:2;
+      color:#f5ead8;
+      font-size:${fontSize}px;
+      max-width:${Math.floor(size * 0.68)}px;
+      text-shadow: 0 1px 6px rgba(0,0,0,0.6);
+    `;
+    txt.textContent = moment.text;
+    inner.appendChild(txt);
   }
 
-  const txt = document.createElement('p');
-  txt.className = 'bubble-text';
-  txt.style.cssText = `color:${palette.color}; font-size:${fontSize}px; max-width:${Math.floor(size * 0.68)}px;`;
-  txt.textContent = moment.text || '';
-  inner.appendChild(txt);
   wrap.appendChild(inner);
 
+  // Timestamp below bubble
   const meta = document.createElement('div');
   meta.className = 'bubble-meta';
   meta.textContent = formatTime(moment.created_at);
