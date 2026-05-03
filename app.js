@@ -19,7 +19,6 @@ const PALETTES = [
 
 // ─── State ───────────────────────────────────────────────
 let selectedFile = null;
-let momentIndex = 0;
 
 // ─── Image preview ───────────────────────────────────────
 function previewImage(e) {
@@ -127,102 +126,116 @@ async function loadMoments() {
       return;
     }
 
-    moments.forEach((m, i) => container.appendChild(buildBubble(m, i)));
+    // Expand moments into individual bubbles
+    const bubbles = expandIntoBubbles(moments);
+    bubbles.forEach((b, i) => container.appendChild(buildBubble(b, i)));
 
   } catch (err) {
     console.error(err);
     container.innerHTML = '';
-    getSeedMoments().forEach((m, i) => container.appendChild(buildBubble(m, i)));
+    const bubbles = expandIntoBubbles(getSeedMoments());
+    bubbles.forEach((b, i) => container.appendChild(buildBubble(b, i)));
   }
 }
 
-// ─── Build bubble ─────────────────────────────────────────
-// Three types:
-//   image-only  — full bleed image fills the circle, no text overlay
-//   text-only   — no image, soft tinted bubble with italic text
-//   combined    — image fills bubble, text floats over a gentle dark veil
+// ─── Expand moments into bubble specs ────────────────────
+// Each moment can produce 1, 2, or 3 bubbles depending on content.
+// If a moment has both text and image:
+//   ~40% chance → one combined bubble (image + text overlay)
+//   ~60% chance → two separate bubbles (image-only + text-only)
+// Text-only or image-only moments always produce exactly one bubble.
 
-function buildBubble(moment, index) {
+function expandIntoBubbles(moments) {
+  const bubbles = [];
+  moments.forEach((m, mi) => {
+    const hasText  = !!(m.text && m.text.trim());
+    const hasImage = !!m.image_url;
+
+    if (hasText && hasImage) {
+      const roll = seededRandom(mi * 7 + 3);
+      if (roll < 0.4) {
+        // Combined bubble
+        bubbles.push({ type: 'combined', text: m.text, image_url: m.image_url, created_at: m.created_at, seed: mi });
+      } else {
+        // Split into two separate bubbles — shuffle order
+        const imgFirst = seededRandom(mi * 13 + 5) > 0.5;
+        const imgBubble  = { type: 'image-only', image_url: m.image_url, created_at: m.created_at, seed: mi * 100 };
+        const textBubble = { type: 'text-only',  text: m.text,           created_at: m.created_at, seed: mi * 100 + 1 };
+        if (imgFirst) {
+          bubbles.push(imgBubble, textBubble);
+        } else {
+          bubbles.push(textBubble, imgBubble);
+        }
+      }
+    } else if (hasImage) {
+      bubbles.push({ type: 'image-only', image_url: m.image_url, created_at: m.created_at, seed: mi });
+    } else if (hasText) {
+      bubbles.push({ type: 'text-only', text: m.text, created_at: m.created_at, seed: mi });
+    }
+  });
+  return bubbles;
+}
+
+// ─── Build a single bubble element ───────────────────────
+function buildBubble(spec, index) {
   const palette = PALETTES[index % PALETTES.length];
-  const rng = seededRandom(index);
-  const hasImage = !!moment.image_url;
-  const hasText  = !!(moment.text && moment.text.trim());
-
-  // Decide variant
-  let variant;
-  if (hasImage && hasText) {
-    // 40% image-only, 40% combined, 20% text-only (image ignored)
-    const roll = seededRandom(index + 100);
-    variant = roll < 0.4 ? 'image-only' : roll < 0.8 ? 'combined' : 'text-only';
-  } else if (hasImage) {
-    variant = 'image-only';
-  } else {
-    variant = 'text-only';
-  }
-
-  // Size varies by variant
-  const size = variant === 'text-only'
-    ? 120 + Math.floor(rng * 90)
-    : 160 + Math.floor(rng * 80);
-
-  const textLen = moment.text ? moment.text.length : 0;
+  const rng = seededRandom(spec.seed !== undefined ? spec.seed : index);
+  const textLen = spec.text ? spec.text.length : 0;
   const fontSize = textLen < 40 ? 15 : textLen > 160 ? 12 : 13;
 
-  // Wrapper
+  const size = spec.type === 'text-only'
+    ? 120 + Math.floor(rng * 90)   // 120–210px
+    : 160 + Math.floor(rng * 80);  // 160–240px
+
   const wrap = document.createElement('div');
   wrap.className = 'bubble';
-  wrap.style.animationDelay = `${index * 0.06}s`;
+  wrap.style.animationDelay = `${index * 0.055}s`;
   wrap.style.marginBottom = '32px';
 
-  // Inner circle
   const inner = document.createElement('div');
   inner.className = 'bubble-inner';
   inner.style.width  = `${size}px`;
   inner.style.height = `${size}px`;
 
-  if (variant === 'text-only') {
-    // Plain tinted bubble
+  if (spec.type === 'text-only') {
     inner.style.background = palette.bg;
     inner.style.border = `1px solid ${palette.border}`;
 
     const txt = document.createElement('p');
     txt.className = 'bubble-text';
     txt.style.cssText = `color:${palette.color}; font-size:${fontSize}px; max-width:${Math.floor(size * 0.70)}px;`;
-    txt.textContent = moment.text;
+    txt.textContent = spec.text;
     inner.appendChild(txt);
 
-  } else if (variant === 'image-only') {
-    // Full-bleed image, no text, just the highlight sheen
+  } else if (spec.type === 'image-only') {
     inner.style.background = '#c8b8a8';
-    inner.style.border = `1px solid rgba(255,255,255,0.3)`;
+    inner.style.border = '1px solid rgba(255,255,255,0.3)';
     inner.style.overflow = 'hidden';
 
     const img = document.createElement('img');
     img.style.cssText = 'width:100%; height:100%; object-fit:cover; display:block; border-radius:50%;';
-    img.src = moment.image_url;
+    img.src = spec.image_url;
     img.alt = 'moment';
     img.loading = 'lazy';
     inner.appendChild(img);
 
-  } else {
-    // Combined: image + text over a soft dark veil
+  } else if (spec.type === 'combined') {
     inner.style.background = '#c8b8a8';
-    inner.style.border = `1px solid rgba(255,255,255,0.25)`;
+    inner.style.border = '1px solid rgba(255,255,255,0.25)';
     inner.style.overflow = 'hidden';
     inner.style.position = 'relative';
 
     const img = document.createElement('img');
     img.style.cssText = 'position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:50%;';
-    img.src = moment.image_url;
+    img.src = spec.image_url;
     img.alt = 'moment';
     img.loading = 'lazy';
     inner.appendChild(img);
 
-    // Dark veil so text is legible
     const veil = document.createElement('div');
     veil.style.cssText = `
       position:absolute; inset:0; border-radius:50%;
-      background: radial-gradient(ellipse at center, rgba(0,0,0,0.45) 40%, rgba(0,0,0,0.15) 100%);
+      background: radial-gradient(ellipse at center, rgba(0,0,0,0.48) 35%, rgba(0,0,0,0.12) 100%);
     `;
     inner.appendChild(veil);
 
@@ -232,19 +245,19 @@ function buildBubble(moment, index) {
       position:relative; z-index:2;
       color:#f5ead8;
       font-size:${fontSize}px;
-      max-width:${Math.floor(size * 0.68)}px;
-      text-shadow: 0 1px 6px rgba(0,0,0,0.6);
+      max-width:${Math.floor(size * 0.66)}px;
+      text-shadow: 0 1px 8px rgba(0,0,0,0.7);
     `;
-    txt.textContent = moment.text;
+    txt.textContent = spec.text;
     inner.appendChild(txt);
   }
 
   wrap.appendChild(inner);
 
-  // Timestamp below bubble
+  // Timestamp
   const meta = document.createElement('div');
   meta.className = 'bubble-meta';
-  meta.textContent = formatTime(moment.created_at);
+  meta.textContent = formatTime(spec.created_at);
   wrap.appendChild(meta);
 
   return wrap;
