@@ -3,24 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Noticed — a quiet place for small moments</title>
+  <title>Have you caught a moment today?</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Lora:ital,wght@0,400;1,400&family=Pinyon+Script&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="root">
 
-    <header class="top-section">
-      <div class="site-name">Noticed</div>
-      <p class="prompt-text">Have you caught a moment today?</p>
-      <p class="sub-prompt">Something small. Something yours.</p>
+    <div class="top-section">
+      <div class="prompt-text">Have you caught a moment today?</div>
+      <div class="sub-prompt">Something small. Something yours.</div>
 
-      <div class="input-card">
-        <textarea id="momentInput" class="moment-input" rows="3" placeholder="I noticed…"></textarea>
+      <div class="input-bubble">
+        <textarea id="momentInput" class="moment-input" rows="3" placeholder="I saw… I felt… I noticed…"></textarea>
 
         <div id="imagePreviewWrap" style="display:none; margin: 12px 0 0;">
-          <img id="imagePreview" style="max-height:160px; border-radius:10px; object-fit:cover; max-width:100%;" />
+          <img id="imagePreview" style="max-height:160px; border-radius:14px; object-fit:cover; max-width:100%; opacity:0.9;" />
           <button onclick="clearImage()" class="clear-img-btn">✕ remove</button>
         </div>
 
@@ -34,22 +33,24 @@
             add an image
             <input type="file" id="imageInput" accept="image/*" onchange="previewImage(event)" style="display:none">
           </label>
-          <button class="add-btn" onclick="submitMoment()">add it</button>
+          <button class="add-btn" onclick="submitMoment()">I see you</button>
         </div>
 
         <div id="submitStatus" class="submit-status" style="display:none;"></div>
       </div>
-    </header>
+    </div>
 
-    <div class="divider"></div>
+    <div class="divider">· · ·</div>
 
-    <main class="mosaic" id="mosaic">
-      <div class="loading-state">loading moments…</div>
+    <main class="bubbles-container" id="bubblesContainer">
+      <div class="loading-state">gathering moments…</div>
     </main>
 
-    <footer class="quiet-footer">every moment matters · add yours above</footer>
-  </div>
+    <footer class="quiet-footer">
+      What other moments will you catch?<br>Come back and share with us.
+    </footer>
 
+  </div>
   <script src="app.js"></script>
 </body>
 </html>
