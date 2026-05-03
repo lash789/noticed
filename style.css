@@ -40,7 +40,6 @@ body {
   font-style: italic;
 }
 
-/* â”€â”€ Input card â”€â”€ */
 .input-bubble {
   background: rgba(255,248,235,0.58);
   border: 1px solid rgba(210,160,80,0.28);
@@ -91,7 +90,7 @@ body {
 
 @keyframes pulseGlow {
   0%,100% { box-shadow: 0 0 12px rgba(220,160,60,0.4), 0 0 28px rgba(220,140,40,0.2); text-shadow: 0 0 10px rgba(220,160,60,0.5); }
-  50%     { box-shadow: 0 0 20px rgba(220,160,60,0.65), 0 0 44px rgba(220,140,40,0.35); text-shadow: 0 0 16px rgba(220,160,60,0.7), 0 0 32px rgba(220,140,40,0.4); }
+  50%     { box-shadow: 0 0 20px rgba(220,160,60,0.65), 0 0 44px rgba(220,140,40,0.35); text-shadow: 0 0 16px rgba(220,160,60,0.7); }
 }
 
 .add-btn {
@@ -129,11 +128,7 @@ body {
   color: rgba(180,120,60,0.35); font-size: 16px; letter-spacing: 10px;
 }
 
-/* â”€â”€ MOSAIC GRID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-   Uses CSS grid with named areas. Each bubble gets a size
-   class (small/medium/large/xlarge) which controls how many
-   grid cells it spans â€” creating the collage effect.
-â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* â”€â”€ MOSAIC GRID â”€â”€ */
 .bubbles-container {
   max-width: 1000px;
   margin: 0 auto;
@@ -142,7 +137,6 @@ body {
   grid-template-columns: repeat(6, 1fr);
   grid-auto-rows: 80px;
   gap: 10px;
-  align-items: start;
 }
 
 .loading-state {
@@ -155,17 +149,16 @@ body {
   padding: 40px 0;
 }
 
-/* Size classes â€” span different numbers of columns and rows */
+/* Size classes */
 .bubble.sz-small  { grid-column: span 2; grid-row: span 2; }
 .bubble.sz-medium { grid-column: span 2; grid-row: span 3; }
 .bubble.sz-large  { grid-column: span 3; grid-row: span 3; }
 .bubble.sz-xlarge { grid-column: span 3; grid-row: span 4; }
 
-/* Mobile â€” 4 column grid, tighter rows */
 @media (max-width: 600px) {
   .bubbles-container {
     grid-template-columns: repeat(4, 1fr);
-    grid-auto-rows: 65px;
+    grid-auto-rows: 60px;
     gap: 7px;
     padding: 16px 8px 60px;
   }
@@ -175,12 +168,16 @@ body {
   .bubble.sz-xlarge { grid-column: span 4; grid-row: span 3; }
 }
 
-/* â”€â”€ Bubble wrapper â”€â”€ */
+/* â”€â”€ Bubble wrapper â€” fills its grid cell completely â”€â”€ */
 .bubble {
   opacity: 0;
   transform: translateY(20px) scale(0.95);
   transition: opacity 0.6s ease, transform 0.6s ease;
   position: relative;
+  /* This is the key â€” make the wrapper fill the grid area */
+  width: 100%;
+  height: 100%;
+  min-height: 0;
 }
 
 .bubble.visible {
@@ -188,7 +185,6 @@ body {
   transform: translateY(0) scale(1);
 }
 
-/* Bob animations */
 @keyframes bobA { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-8px); } }
 @keyframes bobB { 0%,100%{ transform: translateY(0) rotate(0deg); } 50%{ transform: translateY(-6px) rotate(-0.5deg); } }
 @keyframes bobC { 0%,100%{ transform: translate(0,0); } 50%{ transform: translate(5px,-5px); } }
@@ -203,7 +199,7 @@ body {
 .bubble.visible.bob-e { animation: bobE var(--dur,5.5s) ease-in-out infinite var(--delay,0s); }
 .bubble.visible.bob-f { animation: bobF var(--dur,7s) ease-in-out infinite var(--delay,0s); }
 
-/* â”€â”€ Bubble inner â”€â”€ */
+/* â”€â”€ Bubble inner â€” always fills 100% of wrapper â”€â”€ */
 .bubble-inner {
   width: 100%;
   height: 100%;
@@ -214,18 +210,16 @@ body {
   position: relative;
   overflow: hidden;
   transition: transform 0.3s ease;
-  padding: 12px;
+  padding: 14px;
 }
 .bubble-inner:hover { transform: scale(1.03); }
 
-/* Shape variants */
 .bubble-inner.shape-circle   { border-radius: 50%; }
 .bubble-inner.shape-squircle { border-radius: 30%; }
 .bubble-inner.shape-blob1    { border-radius: 60% 40% 55% 45% / 50% 45% 55% 50%; }
 .bubble-inner.shape-blob2    { border-radius: 45% 55% 40% 60% / 55% 40% 60% 45%; }
 .bubble-inner.shape-blob3    { border-radius: 50% 50% 65% 35% / 40% 60% 40% 60%; }
 
-/* Tinted text bubbles */
 .bubble-inner.tinted::after {
   content: '';
   position: absolute;
@@ -237,7 +231,6 @@ body {
   pointer-events: none;
 }
 
-/* Image bubbles */
 .bubble-inner.img-fill { padding: 0; }
 .bubble-inner.img-fill img {
   position: absolute;
@@ -248,14 +241,12 @@ body {
   display: block;
 }
 
-/* Veil for combined bubbles */
 .bubble-veil {
   position: absolute;
   inset: 0;
   background: radial-gradient(ellipse at center, rgba(0,0,0,0.52) 20%, rgba(0,0,0,0.08) 100%);
 }
 
-/* Text inside bubbles */
 .bubble-text {
   font-family: 'EB Garamond', Georgia, serif;
   font-style: italic;
@@ -265,7 +256,6 @@ body {
   overflow: hidden;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  /* Clamp long text â€” never overflows the bubble */
   -webkit-line-clamp: 6;
   max-width: 90%;
 }
@@ -277,7 +267,7 @@ body {
 
 .bubble-meta {
   position: absolute;
-  bottom: -18px;
+  bottom: -16px;
   left: 0; right: 0;
   text-align: center;
   font-size: 9px;
@@ -286,7 +276,6 @@ body {
   font-style: italic;
 }
 
-/* â”€â”€ Footer â”€â”€ */
 .quiet-footer {
   text-align: center;
   margin-top: 64px;
