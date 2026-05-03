@@ -335,3 +335,11 @@ body {
 @media (max-width: 600px) {
   .meadow-heading { font-size: 22px; }
 }
+/* ── Parallax ── */
+.root {
+  overflow-x: hidden;
+}
+
+.bubble.depth-near { --parallax: 0.08; }
+.bubble.depth-mid  { --parallax: 0.04; }
+.bubble.depth-far  { --parallax: 0.02; }
