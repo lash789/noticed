@@ -12,8 +12,8 @@
 }
 
 .blog-hero h1 {
-  font-family: 'Pinyon Script', cursive;
-  font-size: 52px;
+  font-family: 'Playfair Display', Georgia, serif; font-weight: 900; font-style: italic;
+  font-size: 48px;
   color: #7a3a08;
   font-weight: 400;
   margin-bottom: 12px;
