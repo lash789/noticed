@@ -240,12 +240,24 @@ function initHeaderParallax() {
   const topSection = document.querySelector('.top-section');
   if (!topSection) return;
   let ticking = false;
+  let userIsTyping = false;
+
+  // Pause parallax while user is interacting with the form
+  document.querySelectorAll('.moment-input, .optional-input, #imageInput').forEach(el => {
+    el.addEventListener('focus', () => { userIsTyping = true; });
+    el.addEventListener('blur', () => { 
+      setTimeout(() => { userIsTyping = false; }, 1500);
+    });
+  });
+
   window.addEventListener('scroll', () => {
     if (!ticking) {
       requestAnimationFrame(() => {
-        const scrollY = window.scrollY;
-        topSection.style.transform = `translateY(${scrollY * 0.35}px)`;
-        topSection.style.opacity = Math.max(0, 1 - scrollY * 0.003);
+        if (!userIsTyping) {
+          const scrollY = window.scrollY;
+          topSection.style.transform = `translateY(${scrollY * 0.35}px)`;
+          topSection.style.opacity = Math.max(0, 1 - scrollY * 0.003);
+        }
         ticking = false;
       });
       ticking = true;
