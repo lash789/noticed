@@ -247,4 +247,38 @@ function formatMeta(moment) {
   let time = '';
   if (createdAt) {
     const diff = Math.floor((Date.now() - new Date(createdAt)) / 1000);
-    if (diff < 60)
+    if (diff < 60)          time = 'just now';
+    else if (diff < 3600)   time = `${Math.floor(diff/60)}m ago`;
+    else if (diff < 86400)  time = `${Math.floor(diff/3600)}h ago`;
+    else if (diff < 604800) time = `${Math.floor(diff/86400)} days ago`;
+    else time = new Date(createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  }
+  const parts = [time];
+  if (moment.first_name || moment.city) {
+    const who = [moment.first_name, moment.city].filter(Boolean).join(', ');
+    parts.push(who);
+  }
+  return parts.filter(Boolean).join(' · ');
+}
+
+function getSeedMoments() {
+  return [
+    { text: 'the way coffee steam bent sideways when the window opened', created_at: new Date(Date.now()-3600000).toISOString() },
+    { text: 'I noticed the light was already different. Still summer but the angle had shifted.', created_at: new Date(Date.now()-86400000).toISOString() },
+    { text: 'a stranger held the door so long I had to jog', created_at: new Date(Date.now()-172800000).toISOString() },
+    { text: 'my dog sniffed the same patch of sidewalk for two full minutes. I let her.', created_at: new Date(Date.now()-259200000).toISOString() },
+    { text: 'floating', created_at: new Date(Date.now()-300000).toISOString() },
+    { text: 'the smell of rain before it started. that five-second window.', created_at: new Date(Date.now()-345600000).toISOString() },
+    { text: 'she covered her mouth when she laughed. I\'d never noticed before.', created_at: new Date(Date.now()-432000000).toISOString() },
+    { text: 'tiny handprints in the bus window fog', created_at: new Date(Date.now()-518400000).toISOString() },
+    { text: 'two pigeons sharing a chip. one waited.', created_at: new Date(Date.now()-604800000).toISOString() },
+    { text: 'holding my breath every time I open email. still working on it.', created_at: new Date(Date.now()-691200000).toISOString() },
+  ];
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('momentInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); submitMoment(); }
+  });
+  loadMoments();
+});
