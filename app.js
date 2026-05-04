@@ -85,4 +85,166 @@ async function submitMoment() {
     if (!db.ok) throw new Error(await db.text());
 
     input.value = '';
-    if (name​​​​​​​​​​​​​​​​
+    if (nameEl) nameEl.value = '';
+    if (cityEl) cityEl.value = '';
+    clearImage();
+    showStatus("✓ your moment was added — it's now part of the meadow", '#8a6a4a');
+    setTimeout(() => { document.getElementById('submitStatus').style.display = 'none'; loadMoments(); }, 3000);
+
+  } catch (err) {
+    console.error(err);
+    showStatus('something went wrong — please try again', '#b06040');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function showStatus(msg, color) {
+  const s = document.getElementById('submitStatus');
+  s.style.display = 'block';
+  s.style.color = color;
+  s.textContent = msg;
+}
+
+async function loadMoments() {
+  const container = document.getElementById('bubblesContainer');
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/moments?approved=eq.true&order=created_at.desc&limit=60`,
+      { headers: { 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY } }
+    );
+    if (!res.ok) throw new Error();
+    const moments = await res.json();
+    container.innerHTML = '';
+    if (!moments.length) {
+      container.innerHTML = '<div class="loading-state">be the first to share a moment</div>';
+      return;
+    }
+    const shuffled = [...moments].sort(() => Math.random() - 0.5);
+    shuffled.forEach((m, i) => container.appendChild(buildBubble(m, i)));
+  } catch(err) {
+    console.error(err);
+    container.innerHTML = '';
+    getSeedMoments().forEach((m, i) => container.appendChild(buildBubble(m, i)));
+  }
+  initScrollReveal();
+  initHeaderParallax();
+}
+
+function buildBubble(moment, index) {
+  const palette   = PALETTES[index % PALETTES.length];
+  const shape     = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+  const bob       = BOBS[Math.floor(Math.random() * BOBS.length)];
+  const sizeClass = SIZES[Math.floor(Math.random() * SIZES.length)];
+  const dur       = (3.5 + Math.random() * 4).toFixed(1) + 's';
+  const delay     = (Math.random() * 2).toFixed(1) + 's';
+  const depths    = ['depth-near','depth-mid','depth-far'];
+  const depth     = depths[Math.floor(Math.random() * depths.length)];
+
+  const wrap = document.createElement('div');
+  wrap.className = `bubble ${bob} ${sizeClass} ${depth}`;
+  wrap.style.cssText = `--dur:${dur}; --delay:${delay};`;
+
+  const inner = document.createElement('div');
+  inner.className = `bubble-inner ${shape}`;
+
+  const hasText  = !!(moment.text && moment.text.trim());
+  const hasImage = !!moment.image_url;
+  const type     = hasImage && hasText ? 'combined' : hasImage ? 'image-only' : 'text-only';
+  const textLen  = moment.text ? moment.text.length : 0;
+  const fontSize = textLen > 120 ? 11 : textLen > 60 ? 13 : 15;
+
+  if (type === 'text-only') {
+    inner.classList.add('tinted');
+    inner.style.background = palette.bg;
+    inner.style.border = `1px solid ${palette.border}`;
+    const p = document.createElement('p');
+    p.className = 'bubble-text';
+    p.style.cssText = `color:${palette.color}; font-size:${fontSize}px;`;
+    p.textContent = moment.text;
+    inner.appendChild(p);
+
+  } else if (type === 'image-only') {
+    inner.classList.add('img-fill');
+    const img = document.createElement('img');
+    img.src = moment.image_url;
+    img.alt = 'moment';
+    img.loading = 'lazy';
+    inner.appendChild(img);
+
+  } else {
+    inner.classList.add('img-fill');
+    const img = document.createElement('img');
+    img.src = moment.image_url;
+    img.alt = 'moment';
+    img.loading = 'lazy';
+    inner.appendChild(img);
+    const veil = document.createElement('div');
+    veil.className = 'bubble-veil';
+    inner.appendChild(veil);
+    const p = document.createElement('p');
+    p.className = 'bubble-text overlay-text';
+    p.style.fontSize = fontSize + 'px';
+    p.textContent = moment.text;
+    inner.appendChild(p);
+  }
+
+  wrap.appendChild(inner);
+
+  if (moment.created_at) {
+    const meta = document.createElement('div');
+    meta.className = 'bubble-meta';
+    meta.textContent = formatMeta(moment);
+    wrap.appendChild(meta);
+  }
+
+  return wrap;
+}
+
+function initHeaderParallax() {
+  const topSection = document.querySelector('.top-section');
+  if (!topSection) return;
+  let ticking = false;
+
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        const scrollY = window.scrollY;
+        topSection.style.transform = `translateY(${scrollY * 0.35}px)`;
+        topSection.style.opacity = Math.max(0, 1 - scrollY * 0.003);
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
+}
+
+function initScrollReveal() {
+  const bubbles = document.querySelectorAll('.bubble');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const idx = Array.from(bubbles).indexOf(entry.target);
+        setTimeout(() => {
+          entry.target.classList.add('visible');
+          entry.target.classList.remove('faded');
+        }, (idx % 4) * 80);
+      } else {
+        if (entry.target.classList.contains('visible')) {
+          entry.target.classList.add('faded');
+          entry.target.classList.remove('visible');
+        }
+      }
+    });
+  }, { threshold: 0.05, rootMargin: '0px 0px -8% 0px' });
+
+  bubbles.forEach(b => observer.observe(b));
+}
+
+function formatMeta(moment) {
+  const createdAt = moment.created_at;
+  let time = '';
+  if (createdAt) {
+    const diff = Math.floor((Date.now() - new Date(createdAt)) / 1000);
+    if (diff < 60)
