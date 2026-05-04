@@ -185,9 +185,9 @@ body {
   margin: 0 auto;
   padding: 20px 12px 60px;
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  grid-auto-rows: 80px;
-  gap: 8px;
+  grid-template-columns: repeat(8, 1fr);
+  grid-auto-rows: 55px;
+  gap: 6px;
 }
 
 .loading-state {
@@ -203,7 +203,7 @@ body {
 .bubble.sz-small  { grid-column: span 2; grid-row: span 2; }
 .bubble.sz-medium { grid-column: span 2; grid-row: span 3; }
 .bubble.sz-large  { grid-column: span 3; grid-row: span 3; }
-.bubble.sz-xlarge { grid-column: span 3; grid-row: span 4; }
+.bubble.sz-xlarge { grid-column: span 4; grid-row: span 4; }
 
 @media (max-width: 600px) {
   .bubbles-container {
