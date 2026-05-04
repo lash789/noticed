@@ -371,7 +371,6 @@ body {
   font-style: italic;
 }
 
-
 .optional-input:focus {
-  border-bottom-color: rgba(210,160,80,0.6);
+  border-bottom-color: rgba(210,160,80,0.8);
 }
