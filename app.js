@@ -26,6 +26,7 @@ function rng(seed) {
   return x - Math.floor(x);
 }
 
+// ─── Image preview ───────────────────────────────────────
 function previewImage(e) {
   selectedFile = e.target.files[0];
   if (!selectedFile) return;
@@ -44,6 +45,7 @@ function clearImage() {
   document.getElementById('imagePreview').src = '';
 }
 
+// ─── Submit ───────────────────────────────────────────────
 async function submitMoment() {
   const input = document.getElementById('momentInput');
   const text = input.value.trim();
@@ -88,8 +90,8 @@ async function submitMoment() {
     if (nameEl) nameEl.value = '';
     if (cityEl) cityEl.value = '';
     clearImage();
-    showStatus("✓ your moment was added — it's now part of the meadow", '#8a6a4a');
-    setTimeout(() => { document.getElementById('submitStatus').style.display = 'none'; loadMoments(); }, 3000);
+    document.getElementById('submitStatus').style.display = 'none';
+    showPopup();
 
   } catch (err) {
     console.error(err);
@@ -106,6 +108,7 @@ function showStatus(msg, color) {
   s.textContent = msg;
 }
 
+// ─── Load moments ─────────────────────────────────────────
 async function loadMoments() {
   const container = document.getElementById('bubblesContainer');
   try {
@@ -120,17 +123,16 @@ async function loadMoments() {
       container.innerHTML = '<div class="loading-state">be the first to share a moment</div>';
       return;
     }
-    const shuffled = [...moments].sort(() => Math.random() - 0.5);
-    shuffled.forEach((m, i) => container.appendChild(buildBubble(m, i)));
+    moments.forEach((m, i) => container.appendChild(buildBubble(m, i)));
   } catch(err) {
     console.error(err);
     container.innerHTML = '';
     getSeedMoments().forEach((m, i) => container.appendChild(buildBubble(m, i)));
   }
   initScrollReveal();
-  initHeaderParallax();
 }
 
+// ─── Build bubble ─────────────────────────────────────────
 function buildBubble(moment, index) {
   const palette   = PALETTES[index % PALETTES.length];
   const shape     = SHAPES[Math.floor(Math.random() * SHAPES.length)];
@@ -138,8 +140,15 @@ function buildBubble(moment, index) {
   const sizeClass = SIZES[Math.floor(Math.random() * SIZES.length)];
   const dur       = (3.5 + Math.random() * 4).toFixed(1) + 's';
   const delay     = (Math.random() * 2).toFixed(1) + 's';
-  const depths    = ['depth-near','depth-mid','depth-far'];
-  const depth     = depths[Math.floor(Math.random() * depths.length)];
+
+  const hasText  = !!(moment.text && moment.text.trim());
+  const hasImage = !!moment.image_url;
+  const type     = hasImage && hasText ? 'combined' : hasImage ? 'image-only' : 'text-only';
+  const textLen  = moment.text ? moment.text.length : 0;
+  const fontSize = textLen > 120 ? 11 : textLen > 60 ? 13 : 15;
+
+  const depths = ['depth-near','depth-mid','depth-far'];
+  const depth = depths[Math.floor(Math.random() * depths.length)];
 
   const wrap = document.createElement('div');
   wrap.className = `bubble ${bob} ${sizeClass} ${depth}`;
@@ -147,12 +156,6 @@ function buildBubble(moment, index) {
 
   const inner = document.createElement('div');
   inner.className = `bubble-inner ${shape}`;
-
-  const hasText  = !!(moment.text && moment.text.trim());
-  const hasImage = !!moment.image_url;
-  const type     = hasImage && hasText ? 'combined' : hasImage ? 'image-only' : 'text-only';
-  const textLen  = moment.text ? moment.text.length : 0;
-  const fontSize = textLen > 120 ? 11 : textLen > 60 ? 13 : 15;
 
   if (type === 'text-only') {
     inner.classList.add('tinted');
@@ -201,6 +204,7 @@ function buildBubble(moment, index) {
   return wrap;
 }
 
+// ─── Scroll reveal ────────────────────────────────────────
 function initHeaderParallax() {
   const topSection = document.querySelector('.top-section');
   if (!topSection) return;
@@ -220,34 +224,28 @@ function initHeaderParallax() {
 }
 
 function initScrollReveal() {
-  const bubbles = document.querySelectorAll('.bubble');
-
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        const idx = Array.from(bubbles).indexOf(entry.target);
-        setTimeout(() => {
-          entry.target.classList.add('visible');
-          entry.target.classList.remove('faded');
-        }, (idx % 4) * 80);
+        entry.target.classList.add('visible');
+        entry.target.classList.remove('faded');
       } else {
         if (entry.target.classList.contains('visible')) {
           entry.target.classList.add('faded');
-          entry.target.classList.remove('visible');
         }
       }
     });
-  }, { threshold: 0.05, rootMargin: '0px 0px -8% 0px' });
-
-  bubbles.forEach(b => observer.observe(b));
+  }, { threshold: 0.08, rootMargin: '-5% 0px -5% 0px' });
+  document.querySelectorAll('.bubble').forEach(b => observer.observe(b));
 }
 
+// ─── Helpers ──────────────────────────────────────────────
 function formatMeta(moment) {
   const createdAt = moment.created_at;
   let time = '';
   if (createdAt) {
     const diff = Math.floor((Date.now() - new Date(createdAt)) / 1000);
-    if (diff < 60)          time = 'just now';
+    if (diff < 60)     time = 'just now';
     else if (diff < 3600)   time = `${Math.floor(diff/60)}m ago`;
     else if (diff < 86400)  time = `${Math.floor(diff/3600)}h ago`;
     else if (diff < 604800) time = `${Math.floor(diff/86400)} days ago`;
@@ -276,6 +274,7 @@ function getSeedMoments() {
   ];
 }
 
+// ─── Init ─────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('momentInput').addEventListener('keydown', e => {
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); submitMoment(); }
