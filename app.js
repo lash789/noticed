@@ -19,11 +19,41 @@ const SHAPES = ['shape-circle','shape-squircle','shape-blob1','shape-blob2','sha
 const BOBS   = ['bob-a','bob-b','bob-c','bob-d','bob-e','bob-f'];
 const SIZES  = ['sz-small','sz-small','sz-medium','sz-medium','sz-large','sz-xlarge'];
 
+const POPUP_MESSAGES = [
+  { line1: 'Your moment has been caught.', line2: 'It is now part of something beautiful.' },
+  { line1: '"I see you," Mila whispered.', line2: 'The moment catcher shimmered once more.' },
+  { line1: 'Thank you for sharing.', line2: 'Your moment is now part of something bigger.' },
+  { line1: 'Caught.\nHeld.\nRemembered.', line2: 'The meadow grows with every moment noticed.' },
+  { line1: 'There it is.', line2: 'That quiet thing you noticed — it matters. It always did.' },
+  { line1: 'You slowed down.', line2: 'And in doing so, you caught something real.' }
+];
+
 let selectedFile = null;
 
 function rng(seed) {
   const x = Math.sin(seed + 1) * 10000;
   return x - Math.floor(x);
+}
+
+// ─── Popup ────────────────────────────────────────────────
+function showPopup() {
+  const popup = document.getElementById('momentPopup');
+  if (!popup) return;
+  const msg = POPUP_MESSAGES[Math.floor(Math.random() * POPUP_MESSAGES.length)];
+  document.getElementById('popupLine1').innerHTML = msg.line1.replace(/\n/g, '<br>');
+  document.getElementById('popupLine2').textContent = msg.line2;
+  popup.style.display = 'flex';
+  requestAnimationFrame(() => requestAnimationFrame(() => popup.classList.add('visible')));
+}
+
+function closePopup() {
+  const popup = document.getElementById('momentPopup');
+  if (!popup) return;
+  popup.classList.remove('visible');
+  setTimeout(() => {
+    popup.style.display = 'none';
+    loadMoments();
+  }, 800);
 }
 
 // ─── Image preview ───────────────────────────────────────
@@ -123,13 +153,15 @@ async function loadMoments() {
       container.innerHTML = '<div class="loading-state">be the first to share a moment</div>';
       return;
     }
-    moments.forEach((m, i) => container.appendChild(buildBubble(m, i)));
+    const shuffled = [...moments].sort(() => Math.random() - 0.5);
+    shuffled.forEach((m, i) => container.appendChild(buildBubble(m, i)));
   } catch(err) {
     console.error(err);
     container.innerHTML = '';
     getSeedMoments().forEach((m, i) => container.appendChild(buildBubble(m, i)));
   }
   initScrollReveal();
+  initHeaderParallax();
 }
 
 // ─── Build bubble ─────────────────────────────────────────
@@ -140,15 +172,8 @@ function buildBubble(moment, index) {
   const sizeClass = SIZES[Math.floor(Math.random() * SIZES.length)];
   const dur       = (3.5 + Math.random() * 4).toFixed(1) + 's';
   const delay     = (Math.random() * 2).toFixed(1) + 's';
-
-  const hasText  = !!(moment.text && moment.text.trim());
-  const hasImage = !!moment.image_url;
-  const type     = hasImage && hasText ? 'combined' : hasImage ? 'image-only' : 'text-only';
-  const textLen  = moment.text ? moment.text.length : 0;
-  const fontSize = textLen > 120 ? 11 : textLen > 60 ? 13 : 15;
-
-  const depths = ['depth-near','depth-mid','depth-far'];
-  const depth = depths[Math.floor(Math.random() * depths.length)];
+  const depths    = ['depth-near','depth-mid','depth-far'];
+  const depth     = depths[Math.floor(Math.random() * depths.length)];
 
   const wrap = document.createElement('div');
   wrap.className = `bubble ${bob} ${sizeClass} ${depth}`;
@@ -156,6 +181,12 @@ function buildBubble(moment, index) {
 
   const inner = document.createElement('div');
   inner.className = `bubble-inner ${shape}`;
+
+  const hasText  = !!(moment.text && moment.text.trim());
+  const hasImage = !!moment.image_url;
+  const type     = hasImage && hasText ? 'combined' : hasImage ? 'image-only' : 'text-only';
+  const textLen  = moment.text ? moment.text.length : 0;
+  const fontSize = textLen > 120 ? 11 : textLen > 60 ? 13 : 15;
 
   if (type === 'text-only') {
     inner.classList.add('tinted');
@@ -204,12 +235,11 @@ function buildBubble(moment, index) {
   return wrap;
 }
 
-// ─── Scroll reveal ────────────────────────────────────────
+// ─── Parallax & scroll reveal ─────────────────────────────
 function initHeaderParallax() {
   const topSection = document.querySelector('.top-section');
   if (!topSection) return;
   let ticking = false;
-
   window.addEventListener('scroll', () => {
     if (!ticking) {
       requestAnimationFrame(() => {
@@ -224,19 +254,24 @@ function initHeaderParallax() {
 }
 
 function initScrollReveal() {
+  const bubbles = document.querySelectorAll('.bubble');
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        entry.target.classList.remove('faded');
+        const idx = Array.from(bubbles).indexOf(entry.target);
+        setTimeout(() => {
+          entry.target.classList.add('visible');
+          entry.target.classList.remove('faded');
+        }, (idx % 4) * 80);
       } else {
         if (entry.target.classList.contains('visible')) {
           entry.target.classList.add('faded');
+          entry.target.classList.remove('visible');
         }
       }
     });
-  }, { threshold: 0.08, rootMargin: '-5% 0px -5% 0px' });
-  document.querySelectorAll('.bubble').forEach(b => observer.observe(b));
+  }, { threshold: 0.05, rootMargin: '0px 0px -8% 0px' });
+  bubbles.forEach(b => observer.observe(b));
 }
 
 // ─── Helpers ──────────────────────────────────────────────
@@ -245,7 +280,7 @@ function formatMeta(moment) {
   let time = '';
   if (createdAt) {
     const diff = Math.floor((Date.now() - new Date(createdAt)) / 1000);
-    if (diff < 60)     time = 'just now';
+    if (diff < 60)          time = 'just now';
     else if (diff < 3600)   time = `${Math.floor(diff/60)}m ago`;
     else if (diff < 86400)  time = `${Math.floor(diff/3600)}h ago`;
     else if (diff < 604800) time = `${Math.floor(diff/86400)} days ago`;
@@ -276,6 +311,9 @@ function getSeedMoments() {
 
 // ─── Init ─────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  const popup = document.getElementById('momentPopup');
+  if (popup) popup.style.display = 'none';
+
   document.getElementById('momentInput').addEventListener('keydown', e => {
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); submitMoment(); }
   });
