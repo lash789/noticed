@@ -20,12 +20,12 @@ const BOBS   = ['bob-a','bob-b','bob-c','bob-d','bob-e','bob-f'];
 const SIZES  = ['sz-small','sz-small','sz-medium','sz-medium','sz-large','sz-xlarge'];
 
 const POPUP_MESSAGES = [
-  { line1: 'Your moment has been caught.', line2: 'It's now floating in the meadow with the others.' },
-  { line1: '"I see you,"', line2: 'Mila whispered. The moment catcher shimmered once more.' },
-  { line1: 'Thank you for sharing.', line2: 'Your moment is now part of something bigger.' },
+  { line1: 'Your moment has been caught.', line2: "It's now floating in the meadow with the others." },
+  { line1: 'I see you.', line2: 'Mila whispered. The moment catcher shimmered once more.' },
+  { line1: 'Thank you for sharing.', line2: "Your moment is now part of something bigger." },
   { line1: 'Caught. Held. Remembered.', line2: 'The meadow is a little fuller now.' },
   { line1: 'There it is.', line2: 'That small thing you noticed — it matters.' },
-  { line1: 'You slowed down.', line2: 'That's the whole practice. Well done.' },
+  { line1: 'You slowed down.', line2: "That is the whole practice. Well done." },
 ];
 
 let selectedFile = null;
