@@ -249,8 +249,16 @@ function initHeaderParallax() {
       requestAnimationFrame(() => {
         if (!userIsTyping) {
           const scrollY = window.scrollY;
-          topSection.style.transform = `translateY(${scrollY * 0.15}px)`;
-          topSection.style.opacity = Math.max(0.3, 1 - scrollY * 0.001);
+          const opacity = Math.max(0.3, 1 - scrollY * 0.001);
+          const drift = scrollY * 0.15;
+          topSection.style.transform = `translateY(${drift}px)`;
+          topSection.style.opacity = opacity;
+
+          // Reset fully when back at top
+          if (scrollY < 5) {
+            topSection.style.transform = 'translateY(0)';
+            topSection.style.opacity = '1';
+          }
         }
         ticking = false;
       });
