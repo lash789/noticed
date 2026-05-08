@@ -135,6 +135,7 @@ function closePopup() {
 
 async function loadMoments() {
   const container = document.getElementById('bubblesContainer');
+  if (!container) return;
   try {
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/moments?approved=eq.true&order=created_at.desc&limit=60`,
@@ -154,9 +155,17 @@ async function loadMoments() {
     container.innerHTML = '';
     getSeedMoments().forEach((m, i) => container.appendChild(buildBubble(m, i)));
   }
-  initScrollReveal();
+  
+  // Reveal bubbles after they're in the DOM
+  const bubbles = container.querySelectorAll('.bubble');
+  bubbles.forEach((b, i) => {
+    setTimeout(() => b.classList.add('visible'), i * 60);
+  });
+
   initHeaderParallax();
 }
+
+function initScrollReveal() {}
 
 function buildBubble(moment, index) {
   const palette   = PALETTES[index % PALETTES.length];
