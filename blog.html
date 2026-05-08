@@ -23,67 +23,7 @@
     </div>
 
     <div class="blog-grid" id="blogGrid">
-
-      <article class="blog-card blog-card--large">
-        <div class="blog-card-date">April 2026</div>
-        <h2>The Moment You Almost Missed</h2>
-        <p>There's a particular kind of magic in the things we nearly walk past. The way steam curls from a cup. The sound of rain before you've registered it's raining. The split second when the light changes and everything goes gold.</p>
-        <p>We live most of our lives in the gap between what just happened and what might happen next. Our minds are extraordinary time travelers — always somewhere other than here.</p>
-        <p>But noticing is a skill. And like any skill, it gets easier with practice. Not easier in the sense of effortless — easier in the sense of more natural. More available. More like breathing.</p>
-        <p class="blog-pullquote">"The moment you almost missed is still there. It just needs you to turn around."</p>
-        <p>Start small. Pick one thing today — one sensory detail that you'd normally filter out — and just stay with it for a breath. The texture of bark. The sound of your own footsteps. The warmth of water on your hands.</p>
-        <p>That's it. That's the whole practice.</p>
-        <div class="blog-tag">Noticing</div>
-      </article>
-
-      <article class="blog-card">
-        <div class="blog-card-date">March 2026</div>
-        <h2>Why Small Moments Matter More Than Big Ones</h2>
-        <p>We tend to organize our lives around milestones. Graduations. Promotions. Anniversaries. The big moments that feel worth remembering.</p>
-        <p>But ask someone what they actually remember about a year — a good year, a year they loved — and the answers are almost never the milestones. They're the Tuesday afternoon when the light came through the window just right. The walk where nobody said much but everything felt okay.</p>
-        <p>Small moments don't announce themselves. That's the whole point. They ask you to be there first.</p>
-        <div class="blog-tag">Mindfulness</div>
-      </article>
-
-      <article class="blog-card">
-        <div class="blog-card-date">March 2026</div>
-        <h2>What Mila Taught Me About Presence</h2>
-        <p>When I first started writing Mila's story, I thought it was a story about a child learning to slow down. And it is.</p>
-        <p>But the more I sat with it, the more I realized it was also a story I needed. Because I was Mila. Running from moment to moment, always somewhere else in my head, always chasing the next thing.</p>
-        <p>Children are actually remarkable teachers of presence. Watch a small child with something that fascinates them — a bug, a puddle, a piece of string — and you'll see complete absorption. No past. No future. Just this.</p>
-        <p class="blog-pullquote">"We're not teaching children how to notice. We're remembering how, together."</p>
-        <div class="blog-tag">Mila</div>
-      </article>
-
-      <article class="blog-card">
-        <div class="blog-card-date">February 2026</div>
-        <h2>The Power of Now — And Why It's So Hard</h2>
-        <p>Everyone knows they should be present. The phrase "be here now" has been on mugs and posters and meditation apps for decades. So why is it so genuinely difficult?</p>
-        <p>Because the present moment is often uncomfortable. It asks us to feel what we're feeling, without the buffer of distraction. Without the safety of planning or the comfort of remembering.</p>
-        <p>Presence isn't a peaceful meadow you arrive at. It's more like a muscle you exercise in the midst of everything else. In the middle of a meeting. In the queue at the supermarket. In the moment before you pick up your phone.</p>
-        <p>It gets easier. Not always. But often enough.</p>
-        <div class="blog-tag">Mindfulness</div>
-      </article>
-
-      <article class="blog-card">
-        <div class="blog-card-date">February 2026</div>
-        <h2>Raising Noticers</h2>
-        <p>One of the best things you can do with a child is say "did you see that?" — not because they missed something, but because you're inviting them into the habit of looking.</p>
-        <p>Point out the spider web. Name the color of the sky. Ask what they can hear if they close their eyes for ten seconds.</p>
-        <p>You're not teaching a lesson. You're building a practice — one small, shared moment at a time. And somewhere along the way, you'll find yourself noticing more too.</p>
-        <div class="blog-tag">Children</div>
-      </article>
-
-      <article class="blog-card">
-        <div class="blog-card-date">January 2026</div>
-        <h2>On Sharing Quiet Things</h2>
-        <p>There's something vulnerable about sharing a small moment. Not a big story. Not an achievement. Just — "I noticed the light today and it made me feel something."</p>
-        <p>That kind of sharing asks for a different kind of listening. Softer. Less reactive. More present.</p>
-        <p>That's what this space is for. A place where quiet things have room to land.</p>
-        <p>You don't need to explain your moment. You don't need it to mean something grand. You just need to have caught it — and decided it was worth holding for a second longer.</p>
-        <div class="blog-tag">Community</div>
-      </article>
-
+      <div class="loading-state" style="grid-column:1/-1;padding:60px 0;text-align:center;font-family:'Lora',serif;font-style:italic;color:#b8a080;">gathering thoughts…</div>
     </div>
 
     <div class="blog-cta">
@@ -102,5 +42,111 @@
   </div>
 
   <script src="nav.js"></script>
+  <script>
+    const SPACE  = 'sey3swa85zi6';
+    const TOKEN  = 'v0DbJC3PEeEFCpbDtfpcE6GJXF3I7jUuObVfCDXQDxU';
+    const BASE   = `https://cdn.contentful.com/spaces/${SPACE}`;
+
+    // ── Simple rich-text renderer ──────────────────────────────
+    function renderRichText(doc) {
+      if (!doc || !doc.content) return '';
+      return doc.content.map(node => renderNode(node)).join('');
+    }
+
+    function renderNode(node) {
+      const t = node.nodeType;
+      const inner = () => (node.content || []).map(renderNode).join('');
+      if (t === 'paragraph')            return `<p>${inner()}</p>`;
+      if (t === 'heading-1')            return `<h2>${inner()}</h2>`;
+      if (t === 'heading-2')            return `<h3>${inner()}</h3>`;
+      if (t === 'heading-3')            return `<h4>${inner()}</h4>`;
+      if (t === 'unordered-list')       return `<ul>${inner()}</ul>`;
+      if (t === 'ordered-list')         return `<ol>${inner()}</ol>`;
+      if (t === 'list-item')            return `<li>${inner()}</li>`;
+      if (t === 'blockquote')           return `<blockquote>${inner()}</blockquote>`;
+      if (t === 'hr')                   return `<hr>`;
+      if (t === 'text') {
+        let s = node.value || '';
+        if (!s) return '';
+        (node.marks || []).forEach(m => {
+          if (m.type === 'bold')   s = `<strong>${s}</strong>`;
+          if (m.type === 'italic') s = `<em>${s}</em>`;
+          if (m.type === 'code')   s = `<code>${s}</code>`;
+        });
+        return s;
+      }
+      if (t === 'hyperlink') return `<a href="${node.data.uri}" target="_blank" rel="noopener">${inner()}</a>`;
+      if (t === 'embedded-asset-block') {
+        const id = node.data?.target?.sys?.id;
+        return id ? `<img data-asset-id="${id}" class="blog-inline-img" alt="">` : '';
+      }
+      return inner();
+    }
+
+    // ── Fill embedded image URLs after assets are loaded ──────
+    function fillAssetImages(assets) {
+      document.querySelectorAll('[data-asset-id]').forEach(img => {
+        const id = img.getAttribute('data-asset-id');
+        const asset = assets.find(a => a.sys.id === id);
+        if (asset?.fields?.file?.url) img.src = 'https:' + asset.fields.file.url;
+      });
+    }
+
+    // ── Format date ───────────────────────────────────────────
+    function fmtDate(iso) {
+      if (!iso) return '';
+      return new Date(iso).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    }
+
+    // ── Build a card ──────────────────────────────────────────
+    function buildCard(entry, assets, idx) {
+      const f = entry.fields;
+      const isLarge = idx === 0;
+
+      const imgId = f.coverImage?.sys?.id;
+      const asset = imgId ? assets.find(a => a.sys.id === imgId) : null;
+      const imgUrl = asset?.fields?.file?.url ? 'https:' + asset.fields.file.url : null;
+
+      const bodyHtml = renderRichText(f.body);
+      const date = fmtDate(f.publishedDate || entry.sys.createdAt);
+
+      return `
+        <article class="blog-card ${isLarge ? 'blog-card--large' : ''}">
+          ${imgUrl ? `<div class="blog-card-img"><img src="${imgUrl}" alt="${f.title || ''}"></div>` : ''}
+          <div class="blog-card-date">${date}</div>
+          <h2>${f.title || ''}</h2>
+          <div class="blog-card-body">${bodyHtml}</div>
+          ${f.tag ? `<div class="blog-tag">${f.tag}</div>` : ''}
+        </article>`;
+    }
+
+    // ── Fetch & render ────────────────────────────────────────
+    async function loadBlog() {
+      const grid = document.getElementById('blogGrid');
+      try {
+        const url = `${BASE}/entries?content_type=blogPost&order=-fields.publishedDate&include=2&access_token=${TOKEN}`;
+        const res  = await fetch(url);
+        if (!res.ok) throw new Error(res.status);
+        const data = await res.json();
+
+        const posts  = data.items  || [];
+        const assets = (data.includes?.Asset) || [];
+
+        if (!posts.length) {
+          grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 0;font-family:\'Lora\',serif;font-style:italic;color:#b8a080;">No posts yet — check back soon.</div>';
+          return;
+        }
+
+        grid.innerHTML = posts.map((p, i) => buildCard(p, assets, i)).join('');
+        fillAssetImages(assets);
+
+      } catch (err) {
+        console.error('Contentful fetch failed:', err);
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 0;font-family:\'Lora\',serif;font-style:italic;color:#b8a080;">Could not load posts right now.</div>';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadBlog);
+  </script>
 </body>
 </html>
