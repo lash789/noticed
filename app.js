@@ -20,12 +20,12 @@ const BOBS   = ['bob-a','bob-b','bob-c','bob-d','bob-e','bob-f'];
 const SIZES  = ['sz-small','sz-small','sz-medium','sz-medium','sz-large','sz-xlarge'];
 
 const POPUP_MESSAGES = [
-  { line1: 'Your moment has been caught.', line2: "It's now floating in the meadow with the others." },
-  { line1: 'I see you.', line2: 'Mila whispered. The moment catcher shimmered once more.' },
-  { line1: 'Thank you for sharing.', line2: "Your moment is now part of something bigger." },
+  { line1: 'Your moment has been caught.', line2: 'It's now floating in the meadow with the others.' },
+  { line1: '"I see you,"', line2: 'Mila whispered. The moment catcher shimmered once more.' },
+  { line1: 'Thank you for sharing.', line2: 'Your moment is now part of something bigger.' },
   { line1: 'Caught. Held. Remembered.', line2: 'The meadow is a little fuller now.' },
   { line1: 'There it is.', line2: 'That small thing you noticed — it matters.' },
-  { line1: 'You slowed down.', line2: "That is the whole practice. Well done." },
+  { line1: 'You slowed down.', line2: 'That's the whole practice. Well done.' },
 ];
 
 let selectedFile = null;
@@ -155,13 +155,9 @@ async function loadMoments() {
     container.innerHTML = '';
     getSeedMoments().forEach((m, i) => container.appendChild(buildBubble(m, i)));
   }
-  
-  // Reveal bubbles after they're in the DOM
-  const bubbles = container.querySelectorAll('.bubble');
-  bubbles.forEach((b, i) => {
+  container.querySelectorAll('.bubble').forEach((b, i) => {
     setTimeout(() => b.classList.add('visible'), i * 60);
   });
-
   initHeaderParallax();
 }
 
@@ -264,32 +260,21 @@ function initHeaderParallax() {
 }
 
 function initScrollReveal() {
-  document.querySelectorAll('.bubble').forEach((b, i) => {
-    setTimeout(() => b.classList.add('visible'), i * 60);
-  });
-}
+  const bubbles = document.querySelectorAll('.bubble');
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         const idx = Array.from(bubbles).indexOf(entry.target);
         setTimeout(() => {
           entry.target.classList.add('visible');
+          entry.target.classList.remove('faded');
         }, (idx % 4) * 80);
       }
     });
-  }, { threshold: 0.01, rootMargin: '50px' });
-
+  }, { threshold: 0.05 });
   bubbles.forEach(b => observer.observe(b));
-
-  // Safety fallback — if bubbles still invisible after 1.5s, show them all
-  setTimeout(() => {
-    bubbles.forEach((b, i) => {
-      if (!b.classList.contains('visible')) {
-        setTimeout(() => b.classList.add('visible'), i * 40);
-      }
-    });
-  }, 1500);
 }
+
 function formatMeta(moment) {
   const createdAt = moment.created_at;
   let time = '';
