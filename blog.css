@@ -145,3 +145,31 @@
 }
 
 .blog-cta a:hover { color: #4a2008; }
+
+/* ── Contentful rich text & images ── */
+.blog-card-body p  { margin-bottom: 1em; }
+.blog-card-body h2,
+.blog-card-body h3,
+.blog-card-body h4 { font-family: 'Playfair Display', Georgia, serif; font-style: italic; margin: 1.4em 0 0.5em; }
+.blog-card-body ul,
+.blog-card-body ol { padding-left: 1.4em; margin-bottom: 1em; }
+.blog-card-body blockquote {
+  border-left: 2px solid rgba(210,160,80,0.4);
+  margin: 1em 0; padding: 0.5em 1em;
+  font-style: italic; color: #8a6a4a;
+}
+.blog-card-body a { color: #7a3a08; }
+
+.blog-card-img {
+  width: 100%; margin-bottom: 20px;
+  border-radius: 16px; overflow: hidden;
+}
+.blog-card-img img {
+  width: 100%; height: 260px;
+  object-fit: cover; display: block;
+}
+
+.blog-inline-img {
+  width: 100%; border-radius: 12px;
+  margin: 16px 0; display: block;
+}
