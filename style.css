@@ -101,14 +101,21 @@ body {
   width: 160px;
   height: 160px;
   transition: transform 0.3s ease, filter 0.3s ease;
-  mix-blend-mode: normal;
+  animation: netGlow 3s ease-in-out infinite;
 }
+
+@keyframes netGlow {
+  0%,100% { filter: drop-shadow(0 0 6px rgba(220,170,50,0.3)) drop-shadow(0 0 12px rgba(220,150,30,0.15)); }
+  50%      { filter: drop-shadow(0 0 14px rgba(220,170,50,0.65)) drop-shadow(0 0 28px rgba(220,150,30,0.35)); }
+}
+
 .add-btn:hover {
   transform: scale(1.06) translateY(-3px);
-  filter: drop-shadow(0 0 18px rgba(220,180,50,0.6));
+  filter: drop-shadow(0 0 22px rgba(220,180,50,0.8)) drop-shadow(0 0 40px rgba(220,150,30,0.5)) !important;
+  animation: none;
 }
-.add-btn:active { transform: scale(0.97); }
-.add-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.add-btn:active  { transform: scale(0.97); }
+.add-btn:disabled { opacity: 0.5; cursor: not-allowed; animation: none; }
 
 .net-img-btn {
   width: 100%;
