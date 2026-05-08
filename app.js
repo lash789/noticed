@@ -256,20 +256,29 @@ function initHeaderParallax() {
 
 function initScrollReveal() {
   const bubbles = document.querySelectorAll('.bubble');
+  
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         const idx = Array.from(bubbles).indexOf(entry.target);
         setTimeout(() => {
           entry.target.classList.add('visible');
-          entry.target.classList.remove('faded');
         }, (idx % 4) * 80);
       }
     });
-  }, { threshold: 0.05 });
-  bubbles.forEach(b => observer.observe(b));
-}
+  }, { threshold: 0.01, rootMargin: '50px' });
 
+  bubbles.forEach(b => observer.observe(b));
+
+  // Safety fallback — if bubbles still invisible after 1.5s, show them all
+  setTimeout(() => {
+    bubbles.forEach((b, i) => {
+      if (!b.classList.contains('visible')) {
+        setTimeout(() => b.classList.add('visible'), i * 40);
+      }
+    });
+  }, 1500);
+}
 function formatMeta(moment) {
   const createdAt = moment.created_at;
   let time = '';
