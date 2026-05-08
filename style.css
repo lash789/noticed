@@ -171,10 +171,10 @@ body {
   font-size: 16px;
   color: #7a3a08;
   white-space: nowrap;
-  margin-top: 4px;
+  margin-top: 6px;
+  display: block;
   animation: pulseGlow 2.8s ease-in-out infinite;
 }
-
 .clear-img-btn {
   display: block; margin-top: 6px; background: none; border: none;
   font-size: 11px; color: #a08060; font-family: 'Lora', serif;
