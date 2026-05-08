@@ -240,17 +240,11 @@ body {
 
 /* ── Bubble wrapper ── */
 .bubble {
-  opacity: 0;
-  transform: translateY(16px) scale(0.97);
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  opacity: 1;
   position: relative;
   width: 100%;
   height: 100%;
   min-height: 0;
-}
-.bubble.visible {
-  opacity: 1;
-  transform: translateY(0) scale(1);
 }
 
 
