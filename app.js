@@ -20,43 +20,16 @@ const BOBS   = ['bob-a','bob-b','bob-c','bob-d','bob-e','bob-f'];
 const SIZES  = ['sz-small','sz-small','sz-medium','sz-medium','sz-large','sz-xlarge'];
 
 const POPUP_MESSAGES = [
-  { line1: 'Your moment has been caught.', line2: 'It is now part of something beautiful.' },
-  { line1: '"I see you," Mila whispered.', line2: 'The moment catcher shimmered once more.' },
+  { line1: 'Your moment has been caught.', line2: 'It's now floating in the meadow with the others.' },
+  { line1: '"I see you,"', line2: 'Mila whispered. The moment catcher shimmered once more.' },
   { line1: 'Thank you for sharing.', line2: 'Your moment is now part of something bigger.' },
-  { line1: 'Caught.\nHeld.\nRemembered.', line2: 'The meadow grows with every moment noticed.' },
-  { line1: 'There it is.', line2: 'That quiet thing you noticed — it matters. It always did.' },
-  { line1: 'You slowed down.', line2: 'And in doing so, you caught something real.' }
+  { line1: 'Caught. Held. Remembered.', line2: 'The meadow is a little fuller now.' },
+  { line1: 'There it is.', line2: 'That small thing you noticed — it matters.' },
+  { line1: 'You slowed down.', line2: 'That's the whole practice. Well done.' },
 ];
 
 let selectedFile = null;
 
-function rng(seed) {
-  const x = Math.sin(seed + 1) * 10000;
-  return x - Math.floor(x);
-}
-
-// ─── Popup ────────────────────────────────────────────────
-function showPopup() {
-  const popup = document.getElementById('momentPopup');
-  if (!popup) return;
-  const msg = POPUP_MESSAGES[Math.floor(Math.random() * POPUP_MESSAGES.length)];
-  document.getElementById('popupLine1').innerHTML = msg.line1.replace(/\n/g, '<br>');
-  document.getElementById('popupLine2').textContent = msg.line2;
-  popup.style.display = 'flex';
-  requestAnimationFrame(() => requestAnimationFrame(() => popup.classList.add('visible')));
-}
-
-function closePopup() {
-  const popup = document.getElementById('momentPopup');
-  if (!popup) return;
-  popup.classList.remove('visible');
-  setTimeout(() => {
-    popup.style.display = 'none';
-    loadMoments();
-  }, 800);
-}
-
-// ─── Image preview ───────────────────────────────────────
 function previewImage(e) {
   selectedFile = e.target.files[0];
   if (!selectedFile) return;
@@ -75,7 +48,6 @@ function clearImage() {
   document.getElementById('imagePreview').src = '';
 }
 
-// ─── Submit ───────────────────────────────────────────────
 async function submitMoment() {
   const input = document.getElementById('momentInput');
   const text = input.value.trim();
@@ -110,7 +82,12 @@ async function submitMoment() {
 
     const db = await fetch(`${SUPABASE_URL}/rest/v1/moments`, {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`, 'apikey': SUPABASE_ANON_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      headers: {
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'apikey': SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
       body: JSON.stringify({ text: hasText ? text : null, image_url: imageUrl, first_name: firstName || null, city: city || null })
     });
 
@@ -122,6 +99,7 @@ async function submitMoment() {
     clearImage();
     document.getElementById('submitStatus').style.display = 'none';
     showPopup();
+    setTimeout(() => { closePopup(); loadMoments(); }, 4000);
 
   } catch (err) {
     console.error(err);
@@ -138,7 +116,23 @@ function showStatus(msg, color) {
   s.textContent = msg;
 }
 
-// ─── Load moments ─────────────────────────────────────────
+function showPopup() {
+  const popup = document.getElementById('momentPopup');
+  if (!popup) return;
+  const msg = POPUP_MESSAGES[Math.floor(Math.random() * POPUP_MESSAGES.length)];
+  document.getElementById('popupLine1').textContent = msg.line1;
+  document.getElementById('popupLine2').textContent = msg.line2;
+  popup.style.display = 'flex';
+  requestAnimationFrame(() => popup.classList.add('popup-visible'));
+}
+
+function closePopup() {
+  const popup = document.getElementById('momentPopup');
+  if (!popup) return;
+  popup.classList.remove('popup-visible');
+  setTimeout(() => { popup.style.display = 'none'; }, 400);
+}
+
 async function loadMoments() {
   const container = document.getElementById('bubblesContainer');
   try {
@@ -164,7 +158,6 @@ async function loadMoments() {
   initHeaderParallax();
 }
 
-// ─── Build bubble ─────────────────────────────────────────
 function buildBubble(moment, index) {
   const palette   = PALETTES[index % PALETTES.length];
   const shape     = SHAPES[Math.floor(Math.random() * SHAPES.length)];
@@ -172,11 +165,9 @@ function buildBubble(moment, index) {
   const sizeClass = SIZES[Math.floor(Math.random() * SIZES.length)];
   const dur       = (3.5 + Math.random() * 4).toFixed(1) + 's';
   const delay     = (Math.random() * 2).toFixed(1) + 's';
-  const depths    = ['depth-near','depth-mid','depth-far'];
-  const depth     = depths[Math.floor(Math.random() * depths.length)];
 
   const wrap = document.createElement('div');
-  wrap.className = `bubble ${bob} ${sizeClass} ${depth}`;
+  wrap.className = `bubble ${bob} ${sizeClass}`;
   wrap.style.cssText = `--dur:${dur}; --delay:${delay};`;
 
   const inner = document.createElement('div');
@@ -235,17 +226,15 @@ function buildBubble(moment, index) {
   return wrap;
 }
 
-// ─── Parallax & scroll reveal ─────────────────────────────
 function initHeaderParallax() {
   const topSection = document.querySelector('.top-section');
   if (!topSection) return;
   let ticking = false;
   let userIsTyping = false;
 
-  // Pause parallax while user is interacting with the form
   document.querySelectorAll('.moment-input, .optional-input, #imageInput').forEach(el => {
     el.addEventListener('focus', () => { userIsTyping = true; });
-    el.addEventListener('blur', () => { 
+    el.addEventListener('blur', () => {
       setTimeout(() => { userIsTyping = false; }, 1500);
     });
   });
@@ -255,8 +244,8 @@ function initHeaderParallax() {
       requestAnimationFrame(() => {
         if (!userIsTyping) {
           const scrollY = window.scrollY;
-          topSection.style.transform = `translateY(${scrollY * 0.35}px)`;
-          topSection.style.opacity = Math.max(0, 1 - scrollY * 0.003);
+          topSection.style.transform = `translateY(${scrollY * 0.2}px)`;
+          topSection.style.opacity = Math.max(0, 1 - scrollY * 0.0015);
         }
         ticking = false;
       });
@@ -275,18 +264,12 @@ function initScrollReveal() {
           entry.target.classList.add('visible');
           entry.target.classList.remove('faded');
         }, (idx % 4) * 80);
-      } else {
-        if (entry.target.classList.contains('visible')) {
-          entry.target.classList.add('faded');
-          entry.target.classList.remove('visible');
-        }
       }
     });
-  }, { threshold: 0.05, rootMargin: '0px 0px -8% 0px' });
+  }, { threshold: 0.05 });
   bubbles.forEach(b => observer.observe(b));
 }
 
-// ─── Helpers ──────────────────────────────────────────────
 function formatMeta(moment) {
   const createdAt = moment.created_at;
   let time = '';
@@ -321,7 +304,6 @@ function getSeedMoments() {
   ];
 }
 
-// ─── Init ─────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   const popup = document.getElementById('momentPopup');
   if (popup) popup.style.display = 'none';
