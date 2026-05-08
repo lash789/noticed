@@ -67,7 +67,7 @@ body {
 
 .input-footer {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   margin-top: 16px;
   padding-top: 14px;
@@ -98,10 +98,11 @@ body {
   background: none;
   border: none;
   padding: 0;
-  width: 160px;
-  height: 160px;
+  width: 100px;
+  height: 100px;
   transition: transform 0.3s ease, filter 0.3s ease;
   animation: netGlow 3s ease-in-out infinite;
+  flex-shrink: 0;
 }
 
 @keyframes netGlow {
@@ -126,13 +127,13 @@ body {
 
 .net-label {
   position: absolute;
-  top: 38%;
+  bottom: -22px;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   font-family: 'Playfair Display', Georgia, serif;
   font-style: italic;
   font-weight: 700;
-  font-size: 16px;
+  font-size: 15px;
   color: #7a3a08;
   pointer-events: none;
   white-space: nowrap;
