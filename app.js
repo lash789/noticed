@@ -255,8 +255,10 @@ function initHeaderParallax() {
 }
 
 function initScrollReveal() {
-  const bubbles = document.querySelectorAll('.bubble');
-  
+  document.querySelectorAll('.bubble').forEach((b, i) => {
+    setTimeout(() => b.classList.add('visible'), i * 60);
+  });
+}
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
