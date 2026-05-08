@@ -231,7 +231,33 @@ function buildBubble(moment, index) {
   return wrap;
 }
 
-function initHeaderParallax() {}
+function initHeaderParallax() {
+  const topSection = document.querySelector('.top-section');
+  if (!topSection) return;
+  let ticking = false;
+  let userIsTyping = false;
+
+  document.querySelectorAll('.moment-input, .optional-input, #imageInput').forEach(el => {
+    el.addEventListener('focus', () => { userIsTyping = true; });
+    el.addEventListener('blur', () => {
+      setTimeout(() => { userIsTyping = false; }, 1500);
+    });
+  });
+
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        if (!userIsTyping) {
+          const scrollY = window.scrollY;
+          topSection.style.transform = `translateY(${scrollY * 0.15}px)`;
+          topSection.style.opacity = Math.max(0.3, 1 - scrollY * 0.001);
+        }
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
+}
 function initScrollReveal() {}
 
 function formatMeta(moment) {
